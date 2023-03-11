@@ -69,7 +69,9 @@ func (g *ChatGPT) chat(c tele.Context) error {
 		return err
 	}
 
-	teleMessage, err := c.Bot().Reply(c.Message(), messages.LastContent())
+	teleMessage, err := c.Bot().Reply(c.Message(), messages.LastContent(), &tele.SendOptions{
+		ParseMode: "Markdown",
+	})
 	if err != nil {
 		return err
 	}
