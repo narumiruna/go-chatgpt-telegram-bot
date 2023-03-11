@@ -7,8 +7,11 @@ on:
 jobs:
   build:
     runs-on: self-hosted
+    env:
+      working-directory: /home/narumi/workspace/chatgpt-bot
     steps:
     - uses: actions/checkout@v3
+      working-directory: ${{ env.working-directory }}
 
     - name: Set up Go
       uses: actions/setup-go@v3
@@ -17,8 +20,10 @@ jobs:
 
     - name: Build
       run: go build -o chatgpt-bot ./cmd/main.go
+      working-directory: ${{ env.working-directory }}
 
     - name: Deploy
+      working-directory: ${{ env.working-directory }}
       run: |
         export TELEGRAM_BOT_TOKEN=${{ secrets.TELEGRAM_BOT_TOKEN }}
         export OPENAI_API_KEY=${{ secrets.OPENAI_API_KEY }}
