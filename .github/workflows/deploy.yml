@@ -20,6 +20,6 @@ jobs:
 
     - name: Deploy
       run: |
-        export TELEGRAM_BOT_TOKEN=${{ .secrets.TELEGRAM_BOT_TOKEN }}
-        export OPENAI_API_KEY=${{ .secrets.OPENAI_API_KEY }}
+        export TELEGRAM_BOT_TOKEN=${{ secrets.TELEGRAM_BOT_TOKEN }}
+        export OPENAI_API_KEY=${{ secrets.OPENAI_API_KEY }}
         ./chatgpt-bot
