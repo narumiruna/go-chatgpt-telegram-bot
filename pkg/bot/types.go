@@ -5,9 +5,9 @@ import (
 	log "github.com/sirupsen/logrus"
 )
 
-type Messages []openai.ChatCompletionMessage
+type OpenAIMessages []openai.ChatCompletionMessage
 
-func (m Messages) LastContent() string {
+func (m OpenAIMessages) LastContent() string {
 	if len(m) == 0 {
 		log.Errorf("Messages is empty")
 		return ""
@@ -16,11 +16,11 @@ func (m Messages) LastContent() string {
 	return m[len(m)-1].Content
 }
 
-type messagesMap map[int]Messages
+type OpenAIMessagesMap map[int]OpenAIMessages
 
-func (m messagesMap) AppendMessage(key int, message openai.ChatCompletionMessage) {
+func (m OpenAIMessagesMap) AppendMessage(key int, message openai.ChatCompletionMessage) {
 	if _, ok := m[key]; !ok {
-		m[key] = Messages{}
+		m[key] = OpenAIMessages{}
 	}
 
 	m[key] = append(m[key], message)

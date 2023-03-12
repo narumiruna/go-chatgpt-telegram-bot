@@ -14,19 +14,30 @@ import (
 const defaultTimeout = 10 * time.Second
 
 type ChatGPT struct {
-	client      *openai.Client
-	messagesMap messagesMap
+	client            *openai.Client
+	openAIMessagesMap OpenAIMessagesMap
+	chatIDs           []int64
 }
 
-func NewChatGPT(key string) *ChatGPT {
-	messageMap := make(messagesMap)
+func NewChatGPT(key string, chatIDS []int64) *ChatGPT {
+	messageMap := make(OpenAIMessagesMap)
 	return &ChatGPT{
-		client:      openai.NewClient(key),
-		messagesMap: messageMap,
+		client:            openai.NewClient(key),
+		openAIMessagesMap: messageMap,
+		chatIDs:           chatIDS,
 	}
 }
 
-func (g *ChatGPT) complete(ctx context.Context, messages Messages) (Messages, error) {
+func (g *ChatGPT) isValidChatID(chatID int64) bool {
+	for _, id := range g.chatIDs {
+		if id == chatID {
+			return true
+		}
+	}
+	return false
+}
+
+func (g *ChatGPT) complete(ctx context.Context, messages OpenAIMessages) (OpenAIMessages, error) {
 	request := openai.ChatCompletionRequest{
 		Model:    openai.GPT3Dot5Turbo,
 		Messages: messages,
@@ -42,46 +53,60 @@ func (g *ChatGPT) complete(ctx context.Context, messages Messages) (Messages, er
 }
 
 func (g *ChatGPT) chat(c tele.Context) error {
-	messages := Messages{}
-	isReply := c.Message().IsReply()
+	message := c.Message()
+
+	// If chatIDs is not empty, then we only accept messages from those chatIDs
+	chatID := message.Chat.ID
+	if len(g.chatIDs) != 0 && !g.isValidChatID(chatID) {
+		return fmt.Errorf("chatID: %d is not valid", chatID)
+	}
+
+	// If message is a reply, then we need to append the reply to the previous messages
+	openAIMessages := OpenAIMessages{}
+	isReply := message.IsReply()
 	log.Infof("isReply: %t", isReply)
 
 	if isReply {
-		oldMessages, ok := g.messagesMap[c.Message().ReplyTo.ID]
+		oldMessages, ok := g.openAIMessagesMap[message.ReplyTo.ID]
 		if !ok {
-			return fmt.Errorf("no messages for ReplyTo.ID: %d", c.Message().ReplyTo.ID)
+			return fmt.Errorf("no messages for ReplyTo.ID: %d", message.ReplyTo.ID)
 		}
-		messages = append(messages, oldMessages...)
+		openAIMessages = append(openAIMessages, oldMessages...)
 	}
 
-	content := c.Message().Payload
+	content := message.Payload
 	if isReply {
-		content = c.Message().Text
+		content = message.Text
 	}
 	log.Infof("user content: %s", content)
-	messages = append(messages, openai.ChatCompletionMessage{
+	openAIMessages = append(openAIMessages, openai.ChatCompletionMessage{
 		Role:    openai.ChatMessageRoleUser,
 		Content: content,
 	})
 
-	messages, err := g.complete(context.Background(), messages)
+	openAIMessages, err := g.complete(context.Background(), openAIMessages)
 	if err != nil {
 		return err
 	}
 
-	teleMessage, err := c.Bot().Reply(c.Message(), messages.LastContent(), &tele.SendOptions{
+	replyMessage, err := c.Bot().Reply(message, openAIMessages.LastContent(), &tele.SendOptions{
 		ParseMode: "Markdown",
 	})
 	if err != nil {
 		return err
 	}
-	g.messagesMap[teleMessage.ID] = messages
+	g.openAIMessagesMap[replyMessage.ID] = openAIMessages
 	return nil
 }
 
 func Execute() {
 	botToken := os.Getenv("TELEGRAM_BOT_TOKEN")
 	openaiAPIKey := os.Getenv("OPENAI_API_KEY")
+	chatIDs, err := parseInt64(os.Getenv("VALID_CHAT_ID"))
+	if err != nil {
+		log.Fatalf("failed to parse chatIDs: %s", err)
+		return
+	}
 
 	pref := tele.Settings{
 		Token:  botToken,
@@ -94,7 +119,7 @@ func Execute() {
 		return
 	}
 
-	chatGPT := NewChatGPT(openaiAPIKey)
+	chatGPT := NewChatGPT(openaiAPIKey, chatIDs)
 
 	bot.Handle("/gpt", chatGPT.chat)
 	bot.Handle(tele.OnText, chatGPT.chat)
