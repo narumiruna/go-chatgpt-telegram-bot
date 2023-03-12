@@ -74,7 +74,7 @@ func (g *ChatGPT) reply(c tele.Context) error {
 
 	// if replyTo ID is not in the map, then we use the replyTo text as the first message
 	key := fmt.Sprintf("%d@%d", message.ReplyTo.ID, message.Chat.ID)
-	log.Infof("key: %s", key)
+	log.Infof("message key: %s", key)
 	openAIMessages, ok := g.openAIMessagesMap[key]
 	if !ok {
 		openAIMessages = OpenAIMessages{{
@@ -105,7 +105,7 @@ func (g *ChatGPT) chat(c tele.Context, openAIMessages OpenAIMessages) error {
 	}
 
 	key := fmt.Sprintf("%d@%d", replyMessage.ID, replyMessage.Chat.ID)
-	log.Infof("key: %s", key)
+	log.Infof("message key: %s", key)
 	g.openAIMessagesMap[key] = openAIMessages
 	return nil
 }
