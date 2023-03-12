@@ -43,6 +43,7 @@ func (g *ChatGPT) newChat(c tele.Context) error {
 	message := c.Message()
 
 	context := fmt.Sprintf("%s\n%s", message.Payload, message.Text)
+	log.Infof("context: %s", context)
 
 	openAIMessages := OpenAIMessages{
 		{
