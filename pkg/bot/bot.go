@@ -72,19 +72,7 @@ func (g *ChatGPT) newChat(c tele.Context) error {
 		},
 	}
 
-	openAIMessages, err := g.complete(context.Background(), openAIMessages)
-	if err != nil {
-		return err
-	}
-
-	replyMessage, err := c.Bot().Reply(message, openAIMessages.LastContent(), &tele.SendOptions{
-		ParseMode: "Markdown",
-	})
-	if err != nil {
-		return err
-	}
-	g.openAIMessagesMap[replyMessage.ID] = openAIMessages
-	return nil
+	return g.chat(c, openAIMessages)
 }
 
 func (g *ChatGPT) reply(c tele.Context) error {
@@ -120,12 +108,16 @@ func (g *ChatGPT) reply(c tele.Context) error {
 		Content: message.Text,
 	})
 
+	return g.chat(c, openAIMessages)
+}
+
+func (g *ChatGPT) chat(c tele.Context, openAIMessages OpenAIMessages) error {
 	openAIMessages, err := g.complete(context.Background(), openAIMessages)
 	if err != nil {
 		return err
 	}
 
-	replyMessage, err := c.Bot().Reply(message, openAIMessages.LastContent(), &tele.SendOptions{
+	replyMessage, err := c.Bot().Reply(c.Message(), openAIMessages.LastContent(), &tele.SendOptions{
 		ParseMode: "Markdown",
 	})
 	if err != nil {
