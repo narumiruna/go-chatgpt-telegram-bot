@@ -16,20 +16,20 @@ const defaultTimeout = 10 * time.Second
 type ChatGPT struct {
 	client            *openai.Client
 	openAIMessagesMap OpenAIMessagesMap
-	chatIDs           []int64
+	validChatID       []int64
 }
 
-func NewChatGPT(key string, chatIDS []int64) *ChatGPT {
+func NewChatGPT(key string, validChatID []int64) *ChatGPT {
 	messageMap := make(OpenAIMessagesMap)
 	return &ChatGPT{
 		client:            openai.NewClient(key),
 		openAIMessagesMap: messageMap,
-		chatIDs:           chatIDS,
+		validChatID:       validChatID,
 	}
 }
 
 func (g *ChatGPT) isValidChatID(chatID int64) bool {
-	for _, id := range g.chatIDs {
+	for _, id := range g.validChatID {
 		if id == chatID {
 			return true
 		}
@@ -57,7 +57,7 @@ func (g *ChatGPT) chat(c tele.Context) error {
 
 	// If chatIDs is not empty, then we only accept messages from those chatIDs
 	chatID := message.Chat.ID
-	if len(g.chatIDs) != 0 && !g.isValidChatID(chatID) {
+	if len(g.validChatID) != 0 && !g.isValidChatID(chatID) {
 		return fmt.Errorf("chatID: %d is not valid", chatID)
 	}
 
@@ -102,9 +102,9 @@ func (g *ChatGPT) chat(c tele.Context) error {
 func Execute() {
 	botToken := os.Getenv("TELEGRAM_BOT_TOKEN")
 	openaiAPIKey := os.Getenv("OPENAI_API_KEY")
-	chatIDs, err := parseInt64(os.Getenv("VALID_CHAT_ID"))
+	validChatID, err := parseInt64(os.Getenv("VALID_CHAT_ID"))
 	if err != nil {
-		log.Fatalf("failed to parse chatIDs: %s", err)
+		log.Fatalf("failed to parse VALID_CHAT_ID: %+v", err)
 		return
 	}
 
@@ -119,7 +119,7 @@ func Execute() {
 		return
 	}
 
-	chatGPT := NewChatGPT(openaiAPIKey, chatIDs)
+	chatGPT := NewChatGPT(openaiAPIKey, validChatID)
 
 	bot.Handle("/gpt", chatGPT.chat)
 	bot.Handle(tele.OnText, chatGPT.chat)

@@ -32,4 +32,5 @@ jobs:
           -p Restart=always \
           -E TELEGRAM_BOT_TOKEN=${{ secrets.TELEGRAM_BOT_TOKEN }} \
           -E OPENAI_API_KEY=${{ secrets.OPENAI_API_KEY }} \
+          -E VALID_CHAT_ID=${{ secrets.VALID_CHAT_ID }} \
           ./chatgpt-bot
