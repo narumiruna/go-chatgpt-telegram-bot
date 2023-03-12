@@ -67,11 +67,15 @@ func (g *ChatGPT) chat(c tele.Context) error {
 	// If message is a reply, then we need to append the reply to the previous messages
 	openAIMessages := OpenAIMessages{}
 	if isReply {
-		oldMessages, ok := g.openAIMessagesMap[message.ReplyTo.ID]
+		previousOpenAIMessages, ok := g.openAIMessagesMap[message.ReplyTo.ID]
 		if !ok {
-			return fmt.Errorf("no messages for ReplyTo.ID: %d", message.ReplyTo.ID)
+			previousMessage := openai.ChatCompletionMessage{
+				Role:    openai.ChatMessageRoleAssistant,
+				Content: message.ReplyTo.Text,
+			}
+			openAIMessages = append(openAIMessages, previousMessage)
 		}
-		openAIMessages = append(openAIMessages, oldMessages...)
+		openAIMessages = append(openAIMessages, previousOpenAIMessages...)
 	}
 
 	content := message.Payload
