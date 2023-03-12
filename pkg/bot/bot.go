@@ -6,7 +6,6 @@ import (
 
 	log "github.com/sirupsen/logrus"
 	tele "gopkg.in/telebot.v3"
-	"gopkg.in/telebot.v3/middleware"
 )
 
 const defaultTimeout = 10 * time.Second
@@ -32,7 +31,7 @@ func Execute() {
 	}
 
 	if len(validChatID) > 0 {
-		bot.Use(middleware.Whitelist(validChatID...))
+		bot.Use(whitelist(validChatID...))
 	}
 
 	bot.Use(responseTime)
