@@ -35,6 +35,7 @@ func Execute() {
 	}
 
 	bot.Use(responseTimer)
+	bot.Use(messageLogger)
 
 	chatGPT := NewChatGPT(openaiAPIKey, validChatID)
 
