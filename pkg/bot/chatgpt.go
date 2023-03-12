@@ -2,6 +2,7 @@ package bot
 
 import (
 	"context"
+	"fmt"
 
 	openai "github.com/sashabaranov/go-openai"
 	log "github.com/sirupsen/logrus"
@@ -70,7 +71,8 @@ func (g *ChatGPT) reply(c tele.Context) error {
 	}
 
 	// if replyTo ID is not in the map, then we use the replyTo text as the first message
-	openAIMessages, ok := g.openAIMessagesMap[message.ReplyTo.ID]
+	key := fmt.Sprintf("%d@%d", message.ReplyTo.ID, message.Chat.ID)
+	openAIMessages, ok := g.openAIMessagesMap[key]
 	if !ok {
 		openAIMessages = OpenAIMessages{{
 			Role:    openai.ChatMessageRoleAssistant,
@@ -98,6 +100,8 @@ func (g *ChatGPT) chat(c tele.Context, openAIMessages OpenAIMessages) error {
 	if err != nil {
 		return err
 	}
-	g.openAIMessagesMap[replyMessage.ID] = openAIMessages
+
+	key := fmt.Sprintf("%d@%d", replyMessage.ID, replyMessage.Chat.ID)
+	g.openAIMessagesMap[key] = openAIMessages
 	return nil
 }

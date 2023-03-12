@@ -16,4 +16,4 @@ func (m OpenAIMessages) LastContent() string {
 	return m[len(m)-1].Content
 }
 
-type OpenAIMessagesMap map[int]OpenAIMessages
+type OpenAIMessagesMap map[string]OpenAIMessages
