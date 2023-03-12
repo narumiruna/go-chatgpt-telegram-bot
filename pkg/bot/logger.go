@@ -7,6 +7,7 @@ import (
 
 func messageLogger(next tele.HandlerFunc) tele.HandlerFunc {
 	return func(c tele.Context) error {
+		log.Infof("message: %+v", c.Message())
 		log.Infof("message text: %s", c.Message().Text)
 		log.Infof("message payload: %s", c.Message().Payload)
 		return next(c)

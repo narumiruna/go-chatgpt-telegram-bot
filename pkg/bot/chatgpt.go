@@ -3,6 +3,7 @@ package bot
 import (
 	"context"
 	"fmt"
+	"strings"
 
 	openai "github.com/sashabaranov/go-openai"
 	log "github.com/sirupsen/logrus"
@@ -42,13 +43,10 @@ func (g *ChatGPT) complete(ctx context.Context, messages OpenAIMessages) (OpenAI
 func (g *ChatGPT) newChat(c tele.Context) error {
 	message := c.Message()
 
-	context := fmt.Sprintf("%s\n%s", message.Payload, message.Text)
-	log.Infof("context: %s", context)
-
 	openAIMessages := OpenAIMessages{
 		{
 			Role:    openai.ChatMessageRoleUser,
-			Content: context,
+			Content: strings.TrimLeft(message.Text, "/gpt "),
 		},
 	}
 

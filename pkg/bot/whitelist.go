@@ -14,7 +14,7 @@ func whitelist(chats ...int64) tele.MiddlewareFunc {
 					return next(c)
 				}
 			}
-			return c.Reply(fmt.Sprintf("chat id %d is not in whitelist", c.Message().Chat.ID))
+			return c.Reply(fmt.Sprintf("chat ID: %d is not in the whitelist", c.Message().Chat.ID))
 		}
 	}
 }
