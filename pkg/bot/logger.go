@@ -7,9 +7,14 @@ import (
 
 func messageLogger(next tele.HandlerFunc) tele.HandlerFunc {
 	return func(c tele.Context) error {
-		log.Infof("message: %+v", c.Message())
-		log.Infof("message text: %s", c.Message().Text)
-		log.Infof("message payload: %s", c.Message().Payload)
+		m := c.Message()
+		log.Infof("message ID: %d, from sender: %s (%d), text: %s, payload: %s",
+			m.ID,
+			m.Sender.Username,
+			m.Sender.ID,
+			m.Text,
+			m.Payload,
+		)
 		return next(c)
 	}
 }
