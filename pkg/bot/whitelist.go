@@ -1,6 +1,8 @@
 package bot
 
 import (
+	"fmt"
+
 	tele "gopkg.in/telebot.v3"
 )
 
@@ -12,7 +14,7 @@ func whitelist(chats ...int64) tele.MiddlewareFunc {
 					return next(c)
 				}
 			}
-			return nil
+			return c.Reply(fmt.Sprintf("chat id %d is not in whitelist", c.Message().Chat.ID))
 		}
 	}
 }
