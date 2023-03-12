@@ -34,7 +34,7 @@ func Execute() {
 		bot.Use(whitelist(validChatID...))
 	}
 
-	bot.Use(responseTime)
+	bot.Use(responseTimer)
 
 	chatGPT := NewChatGPT(openaiAPIKey, validChatID)
 
