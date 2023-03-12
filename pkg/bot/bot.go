@@ -58,7 +58,7 @@ func (g *ChatGPT) chat(c tele.Context) error {
 	// If chatIDs is not empty, then we only accept messages from those chatIDs
 	chatID := message.Chat.ID
 	if len(g.validChatID) != 0 && !g.isValidChatID(chatID) {
-		return fmt.Errorf("chatID: %d is not valid", chatID)
+		return c.Reply(fmt.Sprintf("Sorry, I'm not allowed to talk to you :(. Add your chat ID: %d to the VALID_CHAT_ID env var.", chatID))
 	}
 
 	// If message is a reply, then we need to append the reply to the previous messages
