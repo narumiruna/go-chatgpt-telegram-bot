@@ -54,22 +54,21 @@ func (g *ChatGPT) complete(ctx context.Context, messages OpenAIMessages) (OpenAI
 func (g *ChatGPT) newChat(c tele.Context) error {
 	message := c.Message()
 
+	if message.Payload == "" {
+		log.Infof("ignore empty payload")
+		return nil
+	}
+
 	// If chatIDs is not empty, then we only accept messages from those chatIDs
 	chatID := message.Chat.ID
 	if len(g.validChatID) != 0 && !g.isValidChatID(chatID) {
 		return c.Reply(fmt.Sprintf("Sorry, I'm not allowed to talk to you :(. Add your chat ID: %d to the VALID_CHAT_ID env var.", chatID))
 	}
 
-	content := message.Payload
-	if content == "" {
-		log.Infof("ignore empty content")
-		return nil
-	}
-	log.Infof("user content: %s", content)
 	openAIMessages := OpenAIMessages{
 		{
 			Role:    openai.ChatMessageRoleUser,
-			Content: content,
+			Content: message.Payload,
 		},
 	}
 
@@ -91,8 +90,15 @@ func (g *ChatGPT) newChat(c tele.Context) error {
 func (g *ChatGPT) reply(c tele.Context) error {
 	message := c.Message()
 
-	isReply := message.IsReply()
-	log.Infof("isReply: %t", isReply)
+	if message.Text == "" {
+		log.Infof("ignore empty message")
+		return nil
+	}
+
+	if !message.IsReply() {
+		log.Infof("ignore non-reply message")
+		return nil
+	}
 
 	// If chatIDs is not empty, then we only accept messages from those chatIDs
 	chatID := message.Chat.ID
@@ -100,13 +106,7 @@ func (g *ChatGPT) reply(c tele.Context) error {
 		return c.Reply(fmt.Sprintf("Sorry, I'm not allowed to talk to you :(. Add your chat ID: %d to the VALID_CHAT_ID env var.", chatID))
 	}
 
-	if !isReply {
-		log.Infof("ignore non-reply message")
-		return nil
-	}
-
-	// If message is a reply, then we need to append the reply to the previous messages
-	// openAIMessages := OpenAIMessages{}
+	// if replyTo ID is not in the map, then we use the replyTo text as the first message
 	openAIMessages, ok := g.openAIMessagesMap[message.ReplyTo.ID]
 	if !ok {
 		openAIMessages = OpenAIMessages{{
@@ -115,20 +115,9 @@ func (g *ChatGPT) reply(c tele.Context) error {
 		}}
 	}
 
-	content := message.Payload
-	if isReply {
-		content = message.Text
-	}
-	log.Infof("user content: %s", content)
-
-	if content == "" {
-		log.Infof("empty content, ignoring")
-		return nil
-	}
-
 	openAIMessages = append(openAIMessages, openai.ChatCompletionMessage{
 		Role:    openai.ChatMessageRoleUser,
-		Content: content,
+		Content: message.Text,
 	})
 
 	openAIMessages, err := g.complete(context.Background(), openAIMessages)
