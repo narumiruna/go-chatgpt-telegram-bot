@@ -2,7 +2,6 @@ package bot
 
 import (
 	"context"
-	"fmt"
 
 	openai "github.com/sashabaranov/go-openai"
 	log "github.com/sirupsen/logrus"
@@ -22,15 +21,6 @@ func NewChatGPT(key string, validChatID []int64) *ChatGPT {
 		openAIMessagesMap: messageMap,
 		validChatID:       validChatID,
 	}
-}
-
-func (g *ChatGPT) isValidChatID(chatID int64) bool {
-	for _, id := range g.validChatID {
-		if id == chatID {
-			return true
-		}
-	}
-	return false
 }
 
 func (g *ChatGPT) complete(ctx context.Context, messages OpenAIMessages) (OpenAIMessages, error) {
@@ -56,12 +46,6 @@ func (g *ChatGPT) newChat(c tele.Context) error {
 		return nil
 	}
 
-	// If chatIDs is not empty, then we only accept messages from those chatIDs
-	chatID := message.Chat.ID
-	if len(g.validChatID) != 0 && !g.isValidChatID(chatID) {
-		return c.Reply(fmt.Sprintf("Sorry, I'm not allowed to talk to you :(. Add your chat ID: %d to the VALID_CHAT_ID env var.", chatID))
-	}
-
 	openAIMessages := OpenAIMessages{
 		{
 			Role:    openai.ChatMessageRoleUser,
@@ -83,12 +67,6 @@ func (g *ChatGPT) reply(c tele.Context) error {
 	if !message.IsReply() {
 		log.Infof("ignore non-reply message")
 		return nil
-	}
-
-	// If chatIDs is not empty, then we only accept messages from those chatIDs
-	chatID := message.Chat.ID
-	if len(g.validChatID) != 0 && !g.isValidChatID(chatID) {
-		return c.Reply(fmt.Sprintf("Sorry, I'm not allowed to talk to you :(. Add your chat ID: %d to the VALID_CHAT_ID env var.", chatID))
 	}
 
 	// if replyTo ID is not in the map, then we use the replyTo text as the first message
