@@ -35,6 +35,8 @@ func Execute() {
 		bot.Use(middleware.Whitelist(validChatID...))
 	}
 
+	bot.Use(responseTime)
+
 	chatGPT := NewChatGPT(openaiAPIKey, validChatID)
 
 	bot.Handle("/gpt", chatGPT.newChat)
