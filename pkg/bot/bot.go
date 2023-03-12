@@ -55,6 +55,9 @@ func (g *ChatGPT) complete(ctx context.Context, messages OpenAIMessages) (OpenAI
 func (g *ChatGPT) chat(c tele.Context) error {
 	message := c.Message()
 
+	isReply := message.IsReply()
+	log.Infof("isReply: %t", isReply)
+
 	// If chatIDs is not empty, then we only accept messages from those chatIDs
 	chatID := message.Chat.ID
 	if len(g.validChatID) != 0 && !g.isValidChatID(chatID) {
@@ -63,9 +66,6 @@ func (g *ChatGPT) chat(c tele.Context) error {
 
 	// If message is a reply, then we need to append the reply to the previous messages
 	openAIMessages := OpenAIMessages{}
-	isReply := message.IsReply()
-	log.Infof("isReply: %t", isReply)
-
 	if isReply {
 		oldMessages, ok := g.openAIMessagesMap[message.ReplyTo.ID]
 		if !ok {
@@ -79,6 +79,12 @@ func (g *ChatGPT) chat(c tele.Context) error {
 		content = message.Text
 	}
 	log.Infof("user content: %s", content)
+
+	if content == "" {
+		log.Infof("empty content, ignoring")
+		return nil
+	}
+
 	openAIMessages = append(openAIMessages, openai.ChatCompletionMessage{
 		Role:    openai.ChatMessageRoleUser,
 		Content: content,
