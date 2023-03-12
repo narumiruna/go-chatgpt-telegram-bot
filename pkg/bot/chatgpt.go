@@ -43,18 +43,24 @@ func (g *ChatGPT) complete(ctx context.Context, messages OpenAIMessages) (OpenAI
 func (g *ChatGPT) newChat(c tele.Context) error {
 	message := c.Message()
 
-	contenxt := strings.TrimLeft(message.Text, "/gpt ")
-	if contenxt == "" {
+	content := strings.TrimLeft(message.Text, "/gpt ")
+	if content == "" {
 		log.Infof("ignore empty contenxt")
 		return nil
 	}
 
-	openAIMessages := OpenAIMessages{
-		{
+	openAIMessages := OpenAIMessages{}
+	if message.IsReply() {
+		openAIMessages = append(openAIMessages, openai.ChatCompletionMessage{
 			Role:    openai.ChatMessageRoleUser,
-			Content: contenxt,
-		},
+			Content: message.ReplyTo.Text,
+		})
 	}
+
+	openAIMessages = append(openAIMessages, openai.ChatCompletionMessage{
+		Role:    openai.ChatMessageRoleUser,
+		Content: content,
+	})
 
 	return g.chat(c, openAIMessages)
 }
