@@ -51,8 +51,44 @@ func (g *ChatGPT) complete(ctx context.Context, messages OpenAIMessages) (OpenAI
 	messages = append(messages, resp.Choices[0].Message)
 	return messages, nil
 }
+func (g *ChatGPT) newChat(c tele.Context) error {
+	message := c.Message()
 
-func (g *ChatGPT) chat(c tele.Context) error {
+	// If chatIDs is not empty, then we only accept messages from those chatIDs
+	chatID := message.Chat.ID
+	if len(g.validChatID) != 0 && !g.isValidChatID(chatID) {
+		return c.Reply(fmt.Sprintf("Sorry, I'm not allowed to talk to you :(. Add your chat ID: %d to the VALID_CHAT_ID env var.", chatID))
+	}
+
+	content := message.Payload
+	if content == "" {
+		log.Infof("ignore empty content")
+		return nil
+	}
+	log.Infof("user content: %s", content)
+	openAIMessages := OpenAIMessages{
+		{
+			Role:    openai.ChatMessageRoleUser,
+			Content: content,
+		},
+	}
+
+	openAIMessages, err := g.complete(context.Background(), openAIMessages)
+	if err != nil {
+		return err
+	}
+
+	replyMessage, err := c.Bot().Reply(message, openAIMessages.LastContent(), &tele.SendOptions{
+		ParseMode: "Markdown",
+	})
+	if err != nil {
+		return err
+	}
+	g.openAIMessagesMap[replyMessage.ID] = openAIMessages
+	return nil
+}
+
+func (g *ChatGPT) reply(c tele.Context) error {
 	message := c.Message()
 
 	isReply := message.IsReply()
@@ -64,23 +100,19 @@ func (g *ChatGPT) chat(c tele.Context) error {
 		return c.Reply(fmt.Sprintf("Sorry, I'm not allowed to talk to you :(. Add your chat ID: %d to the VALID_CHAT_ID env var.", chatID))
 	}
 
-	// If message is not a reply and the payload is empty, then we ignore the message
-	if !isReply && message.Payload == "" {
+	if !isReply {
+		log.Infof("ignore non-reply message")
 		return nil
 	}
 
 	// If message is a reply, then we need to append the reply to the previous messages
-	openAIMessages := OpenAIMessages{}
-	if isReply {
-		previousOpenAIMessages, ok := g.openAIMessagesMap[message.ReplyTo.ID]
-		if !ok {
-			previousMessage := openai.ChatCompletionMessage{
-				Role:    openai.ChatMessageRoleAssistant,
-				Content: message.ReplyTo.Text,
-			}
-			openAIMessages = append(openAIMessages, previousMessage)
-		}
-		openAIMessages = append(openAIMessages, previousOpenAIMessages...)
+	// openAIMessages := OpenAIMessages{}
+	openAIMessages, ok := g.openAIMessagesMap[message.ReplyTo.ID]
+	if !ok {
+		openAIMessages = OpenAIMessages{{
+			Role:    openai.ChatMessageRoleAssistant,
+			Content: message.ReplyTo.Text,
+		}}
 	}
 
 	content := message.Payload
@@ -136,8 +168,8 @@ func Execute() {
 
 	chatGPT := NewChatGPT(openaiAPIKey, validChatID)
 
-	bot.Handle("/gpt", chatGPT.chat)
-	bot.Handle(tele.OnText, chatGPT.chat)
+	bot.Handle("/gpt", chatGPT.newChat)
+	bot.Handle(tele.OnText, chatGPT.reply)
 
 	log.Infof("Starting bot")
 	bot.Start()
