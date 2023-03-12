@@ -42,15 +42,12 @@ func (g *ChatGPT) complete(ctx context.Context, messages OpenAIMessages) (OpenAI
 func (g *ChatGPT) newChat(c tele.Context) error {
 	message := c.Message()
 
-	if message.Payload == "" {
-		log.Infof("ignore empty payload")
-		return nil
-	}
+	context := fmt.Sprintf("%s\n%s", message.Payload, message.Text)
 
 	openAIMessages := OpenAIMessages{
 		{
 			Role:    openai.ChatMessageRoleUser,
-			Content: message.Payload,
+			Content: context,
 		},
 	}
 
