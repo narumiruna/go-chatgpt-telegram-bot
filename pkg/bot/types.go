@@ -17,11 +17,3 @@ func (m OpenAIMessages) LastContent() string {
 }
 
 type OpenAIMessagesMap map[int]OpenAIMessages
-
-func (m OpenAIMessagesMap) AppendMessage(key int, message openai.ChatCompletionMessage) {
-	if _, ok := m[key]; !ok {
-		m[key] = OpenAIMessages{}
-	}
-
-	m[key] = append(m[key], message)
-}
