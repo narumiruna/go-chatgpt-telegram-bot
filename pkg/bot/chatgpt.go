@@ -83,6 +83,11 @@ func (g *ChatGPT) reply(c tele.Context) error {
 	log.Infof("message key: %s", key)
 	openAIMessages, ok := g.openAIMessagesMap[key]
 	if !ok {
+		// ignore if the replyTo message is not from the bot
+		if c.Bot().Me.ID != message.ReplyTo.Sender.ID {
+			return nil
+		}
+
 		openAIMessages = OpenAIMessages{{
 			Role:    openai.ChatMessageRoleAssistant,
 			Content: message.ReplyTo.Text,
