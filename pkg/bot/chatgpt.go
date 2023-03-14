@@ -14,12 +14,14 @@ import (
 type ChatGPT struct {
 	client            *openai.Client
 	openAIMessagesMap OpenAIMessagesMap
+	systemContentMap  map[int64]openai.ChatCompletionMessage
 }
 
 func NewChatGPT(key string) *ChatGPT {
 	return &ChatGPT{
 		client:            openai.NewClient(key),
 		openAIMessagesMap: make(OpenAIMessagesMap),
+		systemContentMap:  make(map[int64]openai.ChatCompletionMessage),
 	}
 }
 
@@ -62,6 +64,10 @@ func (g *ChatGPT) newChat(c tele.Context) error {
 	}
 
 	openAIMessages := OpenAIMessages{}
+	if content, ok := g.systemContentMap[message.Chat.ID]; ok {
+		openAIMessages = append(openAIMessages, content)
+	}
+
 	if message.IsReply() {
 		openAIMessages = append(openAIMessages, openai.ChatCompletionMessage{
 			Role:    openai.ChatMessageRoleUser,
@@ -130,5 +136,21 @@ func (g *ChatGPT) chat(c tele.Context, openAIMessages OpenAIMessages) error {
 	key := fmt.Sprintf("%d@%d", replyMessage.ID, replyMessage.Chat.ID)
 	log.Infof("message key: %s", key)
 	g.openAIMessagesMap[key] = openAIMessages
+	return nil
+}
+
+func (g *ChatGPT) setSystemContent(c tele.Context) error {
+	message := c.Message()
+
+	content := strings.TrimPrefix(message.Text, "/set ")
+	if content == "" {
+		log.Infof("ignore empty contenxt")
+		return nil
+	}
+
+	g.systemContentMap[message.Chat.ID] = openai.ChatCompletionMessage{
+		Role:    openai.ChatMessageRoleSystem,
+		Content: content,
+	}
 	return nil
 }
