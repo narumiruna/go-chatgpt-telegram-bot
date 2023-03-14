@@ -9,4 +9,7 @@ require (
 	gopkg.in/telebot.v3 v3.1.3
 )
 
-require golang.org/x/sys v0.5.0 // indirect
+require (
+	github.com/avast/retry-go v3.0.0+incompatible // indirect
+	golang.org/x/sys v0.5.0 // indirect
+)

@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"strings"
 
+	"github.com/avast/retry-go"
 	openai "github.com/sashabaranov/go-openai"
 	log "github.com/sirupsen/logrus"
 	tele "gopkg.in/telebot.v3"
@@ -31,12 +32,20 @@ func (g *ChatGPT) complete(ctx context.Context, messages OpenAIMessages) (OpenAI
 		Messages: messages,
 	}
 
-	resp, err := g.client.CreateChatCompletion(ctx, request)
+	err := retry.Do(
+		func() error {
+			resp, err := g.client.CreateChatCompletion(ctx, request)
+			if err != nil {
+				return err
+			}
+			messages = append(messages, resp.Choices[0].Message)
+			return nil
+		},
+	)
 	if err != nil {
 		return nil, err
 	}
 
-	messages = append(messages, resp.Choices[0].Message)
 	return messages, nil
 }
 
