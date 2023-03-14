@@ -59,19 +59,19 @@ jobs:
         echo OPENAI_API_KEY=${{ secrets.OPENAI_API_KEY }} >> .env
         echo VALID_CHAT_ID=${{ vars.VALID_CHAT_ID }} >> .env
 
-    - name: Copy files
-      run: |
-        sudo mkdir -p ${{ env.WORKDIR }}
-        sudo cp chatgpt-bot ${{ env.WORKDIR }}
-        sudo cp .env ${{ env.WORKDIR }}
-        sudo cp ${{ env.UNIT }} /etc/systemd/system
-
     - name: Stop and disable service
       continue-on-error: true
       run: |
         sudo systemctl stop ${{ env.UNIT }}
         sudo systemctl disable ${{ env.UNIT }}
         sudo systemctl reset-failed ${{ env.UNIT }}
+
+    - name: Copy files
+      run: |
+        sudo mkdir -p ${{ env.WORKDIR }}
+        sudo cp chatgpt-bot ${{ env.WORKDIR }}
+        sudo cp .env ${{ env.WORKDIR }}
+        sudo cp ${{ env.UNIT }} /etc/systemd/system
 
     - name: Start service
       run: |
