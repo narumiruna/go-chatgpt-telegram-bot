@@ -59,7 +59,6 @@ jobs:
         sudo systemd-run \
           --unit=chatgpt-bot \
           -p CPUSchedulingPolicy=fifo \
-          -p CPUSchedulingPriority=80 \
           -p Restart=always \
           -E TELEGRAM_BOT_TOKEN=${{ secrets.TELEGRAM_BOT_TOKEN }} \
           -E OPENAI_API_KEY=${{ secrets.OPENAI_API_KEY }} \
