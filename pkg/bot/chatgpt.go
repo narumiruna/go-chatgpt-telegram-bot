@@ -39,6 +39,9 @@ func (g *ChatGPT) complete(ctx context.Context, messages OpenAIMessages) (OpenAI
 			return nil
 		},
 		retry.DelayType(retry.BackOffDelay),
+		retry.OnRetry(func(n uint, err error) {
+			log.Infof("retry %d: %v", n, err)
+		}),
 	)
 
 	if err != nil {
