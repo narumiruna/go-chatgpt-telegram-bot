@@ -1,8 +1,9 @@
 module github.com/narumiruna/go-chatgpt-telegram-bot
 
-go 1.20
+go 1.19
 
 require (
+	github.com/joho/godotenv v1.5.1
 	github.com/sashabaranov/go-openai v1.5.0
 	github.com/sirupsen/logrus v1.9.0
 	gopkg.in/telebot.v3 v3.1.3
