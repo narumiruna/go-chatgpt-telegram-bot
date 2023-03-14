@@ -58,7 +58,7 @@ func Execute() {
 	bot.Use(responseTimer)
 	bot.Use(messageLogger)
 
-	chatGPT := NewChatGPT(openaiAPIKey, validChatID)
+	chatGPT := NewChatGPT(openaiAPIKey)
 
 	bot.Handle("/gpt", chatGPT.newChat)
 	bot.Handle(tele.OnText, chatGPT.reply)

@@ -14,15 +14,12 @@ import (
 type ChatGPT struct {
 	client            *openai.Client
 	openAIMessagesMap OpenAIMessagesMap
-	validChatID       []int64
 }
 
-func NewChatGPT(key string, validChatID []int64) *ChatGPT {
-	messageMap := make(OpenAIMessagesMap)
+func NewChatGPT(key string) *ChatGPT {
 	return &ChatGPT{
 		client:            openai.NewClient(key),
-		openAIMessagesMap: messageMap,
-		validChatID:       validChatID,
+		openAIMessagesMap: make(OpenAIMessagesMap),
 	}
 }
 
