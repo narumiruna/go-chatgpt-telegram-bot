@@ -7,11 +7,16 @@ import (
 	tele "gopkg.in/telebot.v3"
 )
 
+func timer(s string) func() {
+	start := time.Now()
+	return func() {
+		log.Infof("[timer] %s took %+v s", s, time.Since(start).Seconds())
+	}
+}
+
 func responseTimer(next tele.HandlerFunc) tele.HandlerFunc {
-	now := time.Now().UnixMilli()
 	return func(c tele.Context) error {
-		responseTime := time.Now().UnixMilli() - now
-		log.Infof("response time: %d ms", responseTime)
+		defer timer("bot response")()
 		return next(c)
 	}
 }
