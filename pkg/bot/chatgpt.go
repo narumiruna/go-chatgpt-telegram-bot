@@ -55,7 +55,7 @@ func (g *ChatGPT) complete(ctx context.Context, messages OpenAIMessages) (OpenAI
 func (g *ChatGPT) newChat(c tele.Context) error {
 	message := c.Message()
 
-	content := strings.TrimLeft(message.Text, "/gpt ")
+	content := strings.TrimPrefix(message.Text, "/gpt ")
 	if content == "" {
 		log.Infof("ignore empty contenxt")
 		return nil
