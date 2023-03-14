@@ -55,6 +55,7 @@ jobs:
       
     - name: Start service
       run: |
+        chmod +x chatgpt-bot
         sudo systemd-run \
           --unit=chatgpt-bot \
           -p CPUSchedulingPolicy=fifo \
