@@ -2,8 +2,12 @@ name: Deploy
 
 on:
   workflow_dispatch:
-#   push:
-#     branches: [ "main" ]
+  push:
+    branches: [ "main" ]
+
+env:
+  UNIT: chatgpt-bot.service
+  WORKDIR: /home/ec2-user/chatgpt-bot
 
 jobs:
   build:
@@ -45,22 +49,32 @@ jobs:
     - uses: actions/download-artifact@v3
       with:
         name: chatgpt-bot
+    
+    - name: Add executable permission
+      run: chmod +x chatgpt-bot
+
+    - name: Create .env file
+      run: |
+        echo TELEGRAM_BOT_TOKEN=${{ secrets.TELEGRAM_BOT_TOKEN }} > .env
+        echo OPENAI_API_KEY=${{ secrets.OPENAI_API_KEY }} >> .env
+        echo VALID_CHAT_ID=${{ vars.VALID_CHAT_ID }} >> .env
+
+    - name: Copy files
+      run: |
+        sudo mkdir -p ${{ env.WORKDIR }}
+        sudo cp chatgpt-bot ${{ env.WORKDIR }}
+        sudo cp .env ${{ env.WORKDIR }}
+        sudo cp ${{ env.UNIT }} /etc/systemd/system
 
     - name: Stop and disable service
       continue-on-error: true
       run: |
-        sudo systemctl stop chatgpt-bot.service
-        sudo systemctl disable chatgpt-bot.service
-        sudo systemctl reset-failed chatgpt-bot.service
-      
+        sudo systemctl stop ${{ env.UNIT }}
+        sudo systemctl disable ${{ env.UNIT }}
+        sudo systemctl reset-failed ${{ env.UNIT }}
+
     - name: Start service
       run: |
-        chmod +x chatgpt-bot
-        sudo systemd-run \
-          --unit=chatgpt-bot \
-          -p CPUSchedulingPolicy=fifo \
-          -p Restart=always \
-          -E TELEGRAM_BOT_TOKEN=${{ secrets.TELEGRAM_BOT_TOKEN }} \
-          -E OPENAI_API_KEY=${{ secrets.OPENAI_API_KEY }} \
-          -E VALID_CHAT_ID=${{ vars.VALID_CHAT_ID }} \
-          ./chatgpt-bot
+        sudo systemctl daemon-reload
+        sudo systemctl enable ${{ env.UNIT }}
+        sudo systemctl start ${{ env.UNIT }}

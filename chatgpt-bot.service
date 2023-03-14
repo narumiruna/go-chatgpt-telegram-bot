@@ -1,0 +1,10 @@
+[Unit]
+
+[Install]
+WantedBy=multi-user.target
+
+[Service]
+WorkingDirectory=/home/ec2-user/chatgpt-bot
+ExecStart=/home/ec2-user/chatgpt-bot/chatgpt-bot
+User=ec2-user
+Restart=always
