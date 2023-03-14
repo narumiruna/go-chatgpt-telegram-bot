@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 	"strings"
+	"time"
 
 	"github.com/avast/retry-go"
 	openai "github.com/sashabaranov/go-openai"
@@ -28,7 +29,6 @@ func (g *ChatGPT) complete(ctx context.Context, messages OpenAIMessages) (OpenAI
 		Model:    openai.GPT3Dot5Turbo,
 		Messages: messages,
 	}
-
 	err := retry.Do(
 		func() error {
 			resp, err := g.client.CreateChatCompletion(ctx, request)
@@ -38,6 +38,7 @@ func (g *ChatGPT) complete(ctx context.Context, messages OpenAIMessages) (OpenAI
 			messages = append(messages, resp.Choices[0].Message)
 			return nil
 		},
+		retry.Delay(time.Duration(0)),
 		retry.DelayType(retry.BackOffDelay),
 		retry.OnRetry(func(n uint, err error) {
 			log.Infof("retry %d: %v", n, err)
