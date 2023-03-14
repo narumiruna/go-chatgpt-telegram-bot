@@ -41,7 +41,9 @@ func (g *ChatGPT) complete(ctx context.Context, messages OpenAIMessages) (OpenAI
 			messages = append(messages, resp.Choices[0].Message)
 			return nil
 		},
+		retry.DelayType(retry.BackOffDelay),
 	)
+
 	if err != nil {
 		return nil, err
 	}
