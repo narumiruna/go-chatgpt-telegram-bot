@@ -6,6 +6,7 @@ import (
 
 	"github.com/joho/godotenv"
 
+	masker "github.com/ggwhite/go-masker"
 	log "github.com/sirupsen/logrus"
 	tele "gopkg.in/telebot.v3"
 )
@@ -20,12 +21,14 @@ func Execute() {
 	}
 
 	botToken := os.Getenv("TELEGRAM_BOT_TOKEN")
+	log.Infof("TELEGRAM_BOT_TOKEN: %s", masker.Address(botToken))
 	if botToken == "" {
 		log.Fatal("TELEGRAM_BOT_TOKEN is not set")
 		return
 	}
 
 	openaiAPIKey := os.Getenv("OPENAI_API_KEY")
+	log.Infof("OPENAI_API_KEY: %s", masker.Address(openaiAPIKey))
 	if openaiAPIKey == "" {
 		log.Fatal("OPENAI_API_KEY is not set")
 		return
