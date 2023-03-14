@@ -6,8 +6,15 @@ on:
     branches: [ "main" ]
 
 jobs:
-  deploy:
-    runs-on: self-hosted
+  build:
+    runs-on: ubuntu-latest
+
+    strategy:
+      matrix:
+        go-version: [1.18.x]
+        os: [linux]
+        arch: [amd64]
+
     steps:
     - uses: actions/checkout@v3
 
@@ -17,7 +24,27 @@ jobs:
         go-version: 1.19
 
     - name: Build
+      env:
+        GOOS: ${{ matrix.os }}
+        GOARCH: ${{ matrix.arch }}
       run: go build -o chatgpt-bot ./cmd/main.go
+
+    - uses: actions/upload-artifact@v3
+      with:
+        name: chatgpt-bot
+        path: chatgpt-bot
+
+  deploy:
+    needs: build
+
+    runs-on: self-hosted
+
+    steps:
+    - uses: actions/checkout@v3
+
+    - uses: actions/download-artifact@v3
+      with:
+        name: chatgpt-bot
 
     - name: Stop and disable service
       continue-on-error: true
@@ -30,6 +57,8 @@ jobs:
       run: |
         sudo systemd-run \
           --unit=chatgpt-bot \
+          -p CPUSchedulingPolicy=fifo \
+          -p CPUSchedulingPriority=80 \
           -p Restart=always \
           -E TELEGRAM_BOT_TOKEN=${{ secrets.TELEGRAM_BOT_TOKEN }} \
           -E OPENAI_API_KEY=${{ secrets.OPENAI_API_KEY }} \
