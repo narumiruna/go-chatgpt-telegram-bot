@@ -14,14 +14,14 @@ import (
 type ChatGPT struct {
 	client            *openai.Client
 	openAIMessagesMap OpenAIMessagesMap
-	systemContentMap  map[int64]openai.ChatCompletionMessage
+	systemContents    map[int64]string
 }
 
 func NewChatGPT(key string) *ChatGPT {
 	return &ChatGPT{
 		client:            openai.NewClient(key),
 		openAIMessagesMap: make(OpenAIMessagesMap),
-		systemContentMap:  make(map[int64]openai.ChatCompletionMessage),
+		systemContents:    make(map[int64]string),
 	}
 }
 
@@ -64,8 +64,11 @@ func (g *ChatGPT) newChat(c tele.Context) error {
 	}
 
 	openAIMessages := OpenAIMessages{}
-	if content, ok := g.systemContentMap[message.Chat.ID]; ok {
-		openAIMessages = append(openAIMessages, content)
+	if content, ok := g.systemContents[message.Chat.ID]; ok {
+		openAIMessages = append(openAIMessages, openai.ChatCompletionMessage{
+			Role:    openai.ChatMessageRoleSystem,
+			Content: content,
+		})
 	}
 
 	if message.IsReply() {
@@ -148,9 +151,6 @@ func (g *ChatGPT) setSystemContent(c tele.Context) error {
 		return nil
 	}
 
-	g.systemContentMap[message.Chat.ID] = openai.ChatCompletionMessage{
-		Role:    openai.ChatMessageRoleSystem,
-		Content: content,
-	}
+	g.systemContents[message.Chat.ID] = content
 	return nil
 }
