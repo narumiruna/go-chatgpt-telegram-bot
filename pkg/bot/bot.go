@@ -60,8 +60,8 @@ func Execute() {
 
 	chatGPT := NewChatGPT(openaiAPIKey)
 
-	bot.Handle("/gpt", chatGPT.newChat)
-	bot.Handle(tele.OnText, chatGPT.reply)
+	bot.Handle("/gpt", chatGPT.handleNewChat)
+	bot.Handle(tele.OnText, chatGPT.handleReply)
 	bot.Handle("/set", chatGPT.setSystemContent)
 
 	log.Infof("Starting bot")
