@@ -9,6 +9,7 @@ import (
 	"github.com/avast/retry-go"
 	"github.com/narumiruna/go-chatgpt-telegram-bot/pkg/store"
 	"github.com/narumiruna/go-chatgpt-telegram-bot/pkg/types"
+	"github.com/narumiruna/go-chatgpt-telegram-bot/pkg/util"
 	openai "github.com/sashabaranov/go-openai"
 	log "github.com/sirupsen/logrus"
 	tele "gopkg.in/telebot.v3"
@@ -35,7 +36,7 @@ func (g *ChatGPT) complete(request openai.ChatCompletionRequest) (openai.ChatCom
 	ctx := context.Background()
 	err := retry.Do(
 		func() error {
-			defer timer("openai chat completion")()
+			defer util.Timer("openai chat completion")()
 			resp, err := g.client.CreateChatCompletion(ctx, request)
 			if err != nil {
 				return err
@@ -95,7 +96,7 @@ func (g *ChatGPT) handleReply(c tele.Context) error {
 	key := fmt.Sprintf("%d@%d", message.ReplyTo.ID, message.Chat.ID)
 	log.Infof("message key: %s", key)
 
-	var chat *types.Chat
+	chat := types.NewChat()
 	err := g.chats.Load(key, chat)
 	if err != nil {
 		// ignore if the replyTo message is not from the bot

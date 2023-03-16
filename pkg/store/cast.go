@@ -1,8 +1,9 @@
 package store
 
 import (
-	"fmt"
 	"strconv"
+
+	log "github.com/sirupsen/logrus"
 )
 
 func cast(data interface{}) string {
@@ -14,6 +15,7 @@ func cast(data interface{}) string {
 	case int64:
 		return strconv.FormatInt(data.(int64), 10)
 	default:
-		panic(fmt.Sprintf("unsupported type %T", v))
+		log.Infof("unsupported type %T", v)
+		return ""
 	}
 }

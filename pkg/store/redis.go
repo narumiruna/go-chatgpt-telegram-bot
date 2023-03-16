@@ -6,6 +6,7 @@ import (
 	"fmt"
 
 	"github.com/codingconcepts/env"
+	"github.com/narumiruna/go-chatgpt-telegram-bot/pkg/util"
 	"github.com/redis/go-redis/v9"
 )
 
@@ -38,6 +39,7 @@ func NewRedisClient(namespace string) *RedisStore {
 }
 
 func (s *RedisStore) Load(key, value interface{}) error {
+	defer util.Timer("redis store load")()
 	data, err := s.redis.Get(context.Background(), s.namespace+":"+cast(key)).Result()
 	if err != nil {
 		return err
@@ -46,6 +48,7 @@ func (s *RedisStore) Load(key, value interface{}) error {
 }
 
 func (s *RedisStore) Save(key, value interface{}) error {
+	defer util.Timer("redis store save")()
 	data, err := json.Marshal(value)
 	if err != nil {
 		return err
