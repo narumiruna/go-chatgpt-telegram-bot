@@ -12,6 +12,8 @@ import (
 	tele "gopkg.in/telebot.v3"
 )
 
+const defaultTemperature = 2.0
+
 type ChatGPT struct {
 	client         *openai.Client
 	chats          types.ChatMap
@@ -28,8 +30,9 @@ func NewChatGPT(key string) *ChatGPT {
 
 func (g *ChatGPT) complete(ctx context.Context, chat *types.Chat) (*types.Chat, error) {
 	request := openai.ChatCompletionRequest{
-		Model:    openai.GPT3Dot5Turbo,
-		Messages: chat.Messages,
+		Model:       openai.GPT3Dot5Turbo,
+		Messages:    chat.Messages,
+		Temperature: defaultTemperature,
 	}
 
 	err := retry.Do(
