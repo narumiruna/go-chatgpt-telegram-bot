@@ -3,6 +3,7 @@ package bot
 import (
 	"context"
 	"fmt"
+	"strconv"
 	"strings"
 
 	"github.com/avast/retry-go"
@@ -12,12 +13,11 @@ import (
 	tele "gopkg.in/telebot.v3"
 )
 
-const defaultTemperature = 1.0
-
 type ChatGPT struct {
 	client         *openai.Client
 	chats          types.ChatMap
 	systemContents map[int64]string
+	temperatures   map[int64]float32
 }
 
 func NewChatGPT(key string) *ChatGPT {
@@ -25,16 +25,13 @@ func NewChatGPT(key string) *ChatGPT {
 		client:         openai.NewClient(key),
 		chats:          make(types.ChatMap),
 		systemContents: make(map[int64]string),
+		temperatures:   make(map[int64]float32),
 	}
 }
 
-func (g *ChatGPT) complete(ctx context.Context, chat *types.Chat) (*types.Chat, error) {
-	request := openai.ChatCompletionRequest{
-		Model:       openai.GPT3Dot5Turbo,
-		Messages:    chat.Messages,
-		Temperature: defaultTemperature,
-	}
-
+func (g *ChatGPT) complete(request openai.ChatCompletionRequest) (openai.ChatCompletionMessage, error) {
+	var message openai.ChatCompletionMessage
+	ctx := context.Background()
 	err := retry.Do(
 		func() error {
 			defer timer("openai chat completion")()
@@ -42,7 +39,7 @@ func (g *ChatGPT) complete(ctx context.Context, chat *types.Chat) (*types.Chat, 
 			if err != nil {
 				return err
 			}
-			chat.Add(resp.Choices[0].Message)
+			message = resp.Choices[0].Message
 			return nil
 		},
 		retry.DelayType(retry.BackOffDelay),
@@ -50,12 +47,10 @@ func (g *ChatGPT) complete(ctx context.Context, chat *types.Chat) (*types.Chat, 
 			log.Infof("retry %d: %v", n, err)
 		}),
 	)
-
 	if err != nil {
-		return nil, err
+		return message, err
 	}
-
-	return chat, nil
+	return message, nil
 }
 
 func (g *ChatGPT) handleNewChat(c tele.Context) error {
@@ -112,12 +107,25 @@ func (g *ChatGPT) handleReply(c tele.Context) error {
 }
 
 func (g *ChatGPT) reply(c tele.Context, chat *types.Chat) error {
-	chat, err := g.complete(context.Background(), chat)
+	message := c.Message()
+
+	request := openai.ChatCompletionRequest{
+		Model:    openai.GPT3Dot5Turbo,
+		Messages: chat.Messages,
+	}
+
+	if t, ok := g.temperatures[message.Chat.ID]; ok {
+		log.Infof("set temperature: %f", t)
+		request.Temperature = t
+	}
+
+	completedMessage, err := g.complete(request)
 	if err != nil {
 		return err
 	}
+	chat.Add(completedMessage)
 
-	replyMessage, err := c.Bot().Reply(c.Message(), chat.LastContent(), &tele.SendOptions{
+	replyMessage, err := c.Bot().Reply(message, chat.LastContent(), &tele.SendOptions{
 		ParseMode: "Markdown",
 	})
 	if err != nil {
@@ -140,5 +148,17 @@ func (g *ChatGPT) setSystemContent(c tele.Context) error {
 	}
 
 	g.systemContents[message.Chat.ID] = content
+	return nil
+}
+
+func (g *ChatGPT) setTemperature(c tele.Context) error {
+	message := c.Message()
+
+	t, err := strconv.ParseFloat(message.Payload, 32)
+	if err != nil {
+		return err
+	}
+
+	g.temperatures[message.Chat.ID] = float32(t)
 	return nil
 }

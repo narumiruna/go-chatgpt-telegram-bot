@@ -63,6 +63,7 @@ func Execute() {
 	bot.Handle("/gpt", chatGPT.handleNewChat)
 	bot.Handle(tele.OnText, chatGPT.handleReply)
 	bot.Handle("/set", chatGPT.setSystemContent)
+	bot.Handle("/temperature", chatGPT.setTemperature)
 
 	log.Infof("Starting bot")
 	bot.Start()
