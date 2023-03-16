@@ -12,7 +12,7 @@ import (
 	tele "gopkg.in/telebot.v3"
 )
 
-const defaultTemperature = 2.0
+const defaultTemperature = 1.0
 
 type ChatGPT struct {
 	client         *openai.Client
