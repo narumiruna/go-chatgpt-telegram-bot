@@ -7,6 +7,7 @@ import (
 	"strings"
 
 	"github.com/avast/retry-go"
+	"github.com/narumiruna/go-chatgpt-telegram-bot/pkg/store"
 	"github.com/narumiruna/go-chatgpt-telegram-bot/pkg/types"
 	openai "github.com/sashabaranov/go-openai"
 	log "github.com/sirupsen/logrus"
@@ -15,17 +16,17 @@ import (
 
 type ChatGPT struct {
 	client         *openai.Client
-	chats          types.ChatMap
-	systemContents map[int64]string
-	temperatures   map[int64]float32
+	chats          store.Store
+	systemContents store.Store
+	temperatures   store.Store
 }
 
 func NewChatGPT(key string) *ChatGPT {
 	return &ChatGPT{
 		client:         openai.NewClient(key),
-		chats:          make(types.ChatMap),
-		systemContents: make(map[int64]string),
-		temperatures:   make(map[int64]float32),
+		chats:          store.New("chats"),
+		systemContents: store.New("contents"),
+		temperatures:   store.New("temperatures"),
 	}
 }
 
@@ -56,22 +57,24 @@ func (g *ChatGPT) complete(request openai.ChatCompletionRequest) (openai.ChatCom
 func (g *ChatGPT) handleNewChat(c tele.Context) error {
 	message := c.Message()
 
-	content := strings.TrimPrefix(message.Text, "/gpt ")
-	if content == "" {
+	userContent := strings.TrimPrefix(message.Text, "/gpt ")
+	if userContent == "" {
 		log.Infof("ignore empty contenxt")
 		return nil
 	}
 
 	chat := types.NewChat()
-	if content, ok := g.systemContents[message.Chat.ID]; ok {
-		chat.AddSystemMessage(content)
+
+	var systemContent string
+	if err := g.systemContents.Load(message.Chat.ID, systemContent); err != nil {
+		chat.AddSystemMessage(systemContent)
 	}
 
 	if message.IsReply() {
 		chat.AddUserMessage(message.ReplyTo.Text)
 	}
 
-	chat.AddUserMessage(content)
+	chat.AddUserMessage(userContent)
 	return g.reply(c, chat)
 }
 
@@ -91,8 +94,10 @@ func (g *ChatGPT) handleReply(c tele.Context) error {
 	// if replyTo ID is not in the map, then we use the replyTo text as the first message
 	key := fmt.Sprintf("%d@%d", message.ReplyTo.ID, message.Chat.ID)
 	log.Infof("message key: %s", key)
-	chat, ok := g.chats[key]
-	if !ok {
+
+	var chat *types.Chat
+	err := g.chats.Load(key, chat)
+	if err != nil {
 		// ignore if the replyTo message is not from the bot
 		if c.Bot().Me.ID != message.ReplyTo.Sender.ID {
 			return nil
@@ -114,10 +119,9 @@ func (g *ChatGPT) reply(c tele.Context, chat *types.Chat) error {
 		Messages: chat.Messages,
 	}
 
-	if t, ok := g.temperatures[message.Chat.ID]; ok {
-		log.Infof("set temperature: %f", t)
-		request.Temperature = t
-	}
+	_ = g.temperatures.Load(message.Chat.ID, request.Temperature)
+
+	log.Infof("request: %+v", request)
 
 	completedMessage, err := g.complete(request)
 	if err != nil {
@@ -134,8 +138,8 @@ func (g *ChatGPT) reply(c tele.Context, chat *types.Chat) error {
 
 	key := fmt.Sprintf("%d@%d", replyMessage.ID, replyMessage.Chat.ID)
 	log.Infof("message key: %s", key)
-	g.chats[key] = chat
-	return nil
+
+	return g.chats.Save(key, chat)
 }
 
 func (g *ChatGPT) setSystemContent(c tele.Context) error {
@@ -147,8 +151,7 @@ func (g *ChatGPT) setSystemContent(c tele.Context) error {
 		return nil
 	}
 
-	g.systemContents[message.Chat.ID] = content
-	return nil
+	return g.systemContents.Save(message.Chat.ID, content)
 }
 
 func (g *ChatGPT) setTemperature(c tele.Context) error {
@@ -159,6 +162,5 @@ func (g *ChatGPT) setTemperature(c tele.Context) error {
 		return err
 	}
 
-	g.temperatures[message.Chat.ID] = float32(t)
-	return nil
+	return g.temperatures.Save(message.Chat.ID, float32(t))
 }
