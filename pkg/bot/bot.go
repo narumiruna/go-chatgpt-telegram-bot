@@ -1,12 +1,11 @@
 package bot
 
 import (
-	"os"
 	"time"
 
+	"github.com/codingconcepts/env"
 	"github.com/joho/godotenv"
 
-	masker "github.com/ggwhite/go-masker"
 	log "github.com/sirupsen/logrus"
 	tele "gopkg.in/telebot.v3"
 )
@@ -14,34 +13,30 @@ import (
 const defaultEnvFile = ".env"
 const defaultTimeout = 10 * time.Second
 
+type BotConfig struct {
+	// Telegram bot token
+	TelegramBotToken string `env:"TELEGRAM_BOT_TOKEN" required:"true"`
+
+	// OpenAI API key
+	OpenAIAPIKey string `env:"OPENAI_API_KEY" required:"true"`
+
+	// Valid chat ID (whitelist)
+	ValidChatID []int64 `env:"VALID_CHAT_ID"`
+}
+
 func Execute() {
 	err := godotenv.Load(defaultEnvFile)
 	if err != nil {
 		log.Warnf("failed to load .env file: %+v", err)
 	}
 
-	botToken := os.Getenv("TELEGRAM_BOT_TOKEN")
-	log.Infof("TELEGRAM_BOT_TOKEN: %s", masker.Address(botToken))
-	if botToken == "" {
-		log.Fatal("TELEGRAM_BOT_TOKEN is not set")
-		return
-	}
-
-	openaiAPIKey := os.Getenv("OPENAI_API_KEY")
-	log.Infof("OPENAI_API_KEY: %s", masker.Address(openaiAPIKey))
-	if openaiAPIKey == "" {
-		log.Fatal("OPENAI_API_KEY is not set")
-		return
-	}
-
-	validChatID, err := parseInt64(os.Getenv("VALID_CHAT_ID"))
-	if err != nil {
-		log.Fatalf("failed to parse VALID_CHAT_ID: %+v", err)
-		return
+	var config BotConfig
+	if err := env.Set(&config); err != nil {
+		log.Fatal(err)
 	}
 
 	pref := tele.Settings{
-		Token:  botToken,
+		Token:  config.TelegramBotToken,
 		Poller: &tele.LongPoller{Timeout: defaultTimeout},
 	}
 
@@ -51,14 +46,14 @@ func Execute() {
 		return
 	}
 
-	if len(validChatID) > 0 {
-		bot.Use(whitelist(validChatID...))
+	if len(config.ValidChatID) > 0 {
+		bot.Use(whitelist(config.ValidChatID...))
 	}
 
 	bot.Use(responseTimer)
 	bot.Use(messageLogger)
 
-	chatGPT := NewChatGPT(openaiAPIKey)
+	chatGPT := NewChatGPT(config.OpenAIAPIKey)
 
 	bot.Handle("/gpt", chatGPT.handleNewChat)
 	bot.Handle(tele.OnText, chatGPT.handleReply)
