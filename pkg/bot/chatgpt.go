@@ -55,7 +55,7 @@ func (g *ChatGPTService) complete(request openai.ChatCompletionRequest) (openai.
 	return message, nil
 }
 
-func (g *ChatGPTService) handleNewChat(c tele.Context) error {
+func (g *ChatGPTService) OnNewChat(c tele.Context) error {
 	message := c.Message()
 
 	userContent := strings.TrimPrefix(message.Text, "/gpt ")
@@ -79,7 +79,7 @@ func (g *ChatGPTService) handleNewChat(c tele.Context) error {
 	return g.reply(c, chat)
 }
 
-func (g *ChatGPTService) handleReply(c tele.Context) error {
+func (g *ChatGPTService) OnReply(c tele.Context) error {
 	message := c.Message()
 
 	if message.Text == "" {
@@ -143,7 +143,7 @@ func (g *ChatGPTService) reply(c tele.Context, chat *types.Chat) error {
 	return g.chats.Save(key, chat)
 }
 
-func (g *ChatGPTService) setSystemContent(c tele.Context) error {
+func (g *ChatGPTService) OnSet(c tele.Context) error {
 	message := c.Message()
 
 	content := strings.TrimPrefix(message.Text, "/set ")
@@ -155,7 +155,7 @@ func (g *ChatGPTService) setSystemContent(c tele.Context) error {
 	return g.systemContents.Save(message.Chat.ID, content)
 }
 
-func (g *ChatGPTService) setTemperature(c tele.Context) error {
+func (g *ChatGPTService) OnTemperature(c tele.Context) error {
 	message := c.Message()
 
 	t, err := strconv.ParseFloat(message.Payload, 32)
