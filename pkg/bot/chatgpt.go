@@ -15,15 +15,15 @@ import (
 	tele "gopkg.in/telebot.v3"
 )
 
-type ChatGPT struct {
+type ChatGPTService struct {
 	client         *openai.Client
 	chats          store.Store
 	systemContents store.Store
 	temperatures   store.Store
 }
 
-func NewChatGPT(key string) *ChatGPT {
-	return &ChatGPT{
+func NewChatGPTService(key string) *ChatGPTService {
+	return &ChatGPTService{
 		client:         openai.NewClient(key),
 		chats:          store.New("chats"),
 		systemContents: store.New("contents"),
@@ -31,7 +31,7 @@ func NewChatGPT(key string) *ChatGPT {
 	}
 }
 
-func (g *ChatGPT) complete(request openai.ChatCompletionRequest) (openai.ChatCompletionMessage, error) {
+func (g *ChatGPTService) complete(request openai.ChatCompletionRequest) (openai.ChatCompletionMessage, error) {
 	var message openai.ChatCompletionMessage
 	ctx := context.Background()
 	err := retry.Do(
@@ -55,7 +55,7 @@ func (g *ChatGPT) complete(request openai.ChatCompletionRequest) (openai.ChatCom
 	return message, nil
 }
 
-func (g *ChatGPT) handleNewChat(c tele.Context) error {
+func (g *ChatGPTService) handleNewChat(c tele.Context) error {
 	message := c.Message()
 
 	userContent := strings.TrimPrefix(message.Text, "/gpt ")
@@ -79,7 +79,7 @@ func (g *ChatGPT) handleNewChat(c tele.Context) error {
 	return g.reply(c, chat)
 }
 
-func (g *ChatGPT) handleReply(c tele.Context) error {
+func (g *ChatGPTService) handleReply(c tele.Context) error {
 	message := c.Message()
 
 	if message.Text == "" {
@@ -112,7 +112,7 @@ func (g *ChatGPT) handleReply(c tele.Context) error {
 	return g.reply(c, chat)
 }
 
-func (g *ChatGPT) reply(c tele.Context, chat *types.Chat) error {
+func (g *ChatGPTService) reply(c tele.Context, chat *types.Chat) error {
 	message := c.Message()
 
 	request := openai.ChatCompletionRequest{
@@ -143,7 +143,7 @@ func (g *ChatGPT) reply(c tele.Context, chat *types.Chat) error {
 	return g.chats.Save(key, chat)
 }
 
-func (g *ChatGPT) setSystemContent(c tele.Context) error {
+func (g *ChatGPTService) setSystemContent(c tele.Context) error {
 	message := c.Message()
 
 	content := strings.TrimPrefix(message.Text, "/set ")
@@ -155,7 +155,7 @@ func (g *ChatGPT) setSystemContent(c tele.Context) error {
 	return g.systemContents.Save(message.Chat.ID, content)
 }
 
-func (g *ChatGPT) setTemperature(c tele.Context) error {
+func (g *ChatGPTService) setTemperature(c tele.Context) error {
 	message := c.Message()
 
 	t, err := strconv.ParseFloat(message.Payload, 32)
