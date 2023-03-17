@@ -165,3 +165,13 @@ func (g *ChatGPT) setTemperature(c tele.Context) error {
 
 	return g.temperatures.Save(message.Chat.ID, float32(t))
 }
+
+func (g *ChatGPT) HandleHelp(c tele.Context) error {
+	s := `
+/help - show this help message
+/gpt <message> - start a new chat
+/set <message> - set the system content
+/temperature <temperature> - set the temperature
+`
+	return c.Reply(s)
+}
