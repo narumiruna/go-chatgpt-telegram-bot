@@ -1,22 +1,13 @@
 package bot
 
 import (
-	"time"
-
-	log "github.com/sirupsen/logrus"
+	"github.com/narumiruna/go-chatgpt-telegram-bot/pkg/util"
 	tele "gopkg.in/telebot.v3"
 )
 
-func timer(s string) func() {
-	start := time.Now()
-	return func() {
-		log.Infof("[timer] %s took %+v s", s, time.Since(start).Seconds())
-	}
-}
-
 func responseTimer(next tele.HandlerFunc) tele.HandlerFunc {
 	return func(c tele.Context) error {
-		defer timer("bot response")()
+		defer util.Timer("bot response")()
 		return next(c)
 	}
 }

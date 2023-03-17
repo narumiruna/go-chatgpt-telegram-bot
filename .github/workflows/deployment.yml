@@ -57,6 +57,7 @@ jobs:
           echo TELEGRAM_BOT_TOKEN=${{ secrets.TELEGRAM_BOT_TOKEN }} > .env
           echo OPENAI_API_KEY=${{ secrets.OPENAI_API_KEY }} >> .env
           echo VALID_CHAT_ID=${{ vars.VALID_CHAT_ID }} >> .env
+          echo STORE_TYPE=redis >> .env
 
       - name: Stop and disable service
         continue-on-error: true

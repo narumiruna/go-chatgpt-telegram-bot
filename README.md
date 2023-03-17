@@ -6,8 +6,15 @@
 export TELEGRAM_BOT_TOKEN=
 export OPENAI_API_KEY=
 
-# optional
+# whitelist
 export VALID_CHAT_ID=
+
+# use redis to store data
+export STORE_TYPE=redis
+export REDIS_HOST=localhost
+export REDIS_PORT=6379
+export REDIS_PASSWORD=
+export REDIS_DB=0
 
 go run ./cmd
 ```
