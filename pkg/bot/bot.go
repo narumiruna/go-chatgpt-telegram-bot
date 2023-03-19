@@ -60,6 +60,7 @@ func Execute() {
 	bot.Handle("/set", chatGPTService.OnSet)
 	bot.Handle("/temperature", chatGPTService.OnTemperature)
 	bot.Handle("/help", onHelp)
+	bot.Handle("/tc", chatGPTService.OnTC)
 
 	log.Infof("Starting bot")
 	bot.Start()

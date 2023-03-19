@@ -60,7 +60,7 @@ func (g *ChatGPTService) OnNewChat(c tele.Context) error {
 
 	userContent := strings.TrimPrefix(message.Text, "/gpt ")
 	if userContent == "" {
-		log.Infof("ignore empty contenxt")
+		log.Infof("ignore empty content")
 		return nil
 	}
 
@@ -148,7 +148,7 @@ func (g *ChatGPTService) OnSet(c tele.Context) error {
 
 	content := strings.TrimPrefix(message.Text, "/set ")
 	if content == "" {
-		log.Infof("ignore empty contenxt")
+		log.Infof("ignore empty content")
 		return nil
 	}
 
@@ -164,4 +164,20 @@ func (g *ChatGPTService) OnTemperature(c tele.Context) error {
 	}
 
 	return g.temperatures.Save(message.Chat.ID, float32(t))
+}
+
+func (g *ChatGPTService) OnTC(c tele.Context) error {
+	message := c.Message()
+
+	chat := types.NewChat()
+	chat.AddSystemMessage("You are a translation assistant. You will translate all messages to Traditional Chinese.")
+
+	userContent := strings.TrimPrefix(message.Text, "/tc ")
+	if userContent == "" {
+		log.Infof("ignore empty content")
+		return nil
+	}
+	chat.AddUserMessage(userContent)
+
+	return g.reply(c, chat)
 }
