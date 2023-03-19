@@ -175,6 +175,10 @@ func (g *ChatGPTService) OnTC(c tele.Context) error {
 
 	chat.AddSystemMessage(systemContent)
 
+	if message.IsReply() {
+		chat.AddUserMessage(message.ReplyTo.Text)
+	}
+
 	userContent := strings.TrimPrefix(message.Text, "/tc ")
 	if userContent == "" {
 		log.Infof("ignore empty content")
