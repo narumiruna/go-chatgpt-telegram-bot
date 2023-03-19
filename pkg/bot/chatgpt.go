@@ -170,7 +170,10 @@ func (g *ChatGPTService) OnTC(c tele.Context) error {
 	message := c.Message()
 
 	chat := types.NewChat()
-	chat.AddSystemMessage("You are a translation assistant. You will translate all messages to Traditional Chinese.")
+	systemContent := "You are a translation assistant." +
+		" You will translate all messages to Traditional Chinese with traditional characters."
+
+	chat.AddSystemMessage(systemContent)
 
 	userContent := strings.TrimPrefix(message.Text, "/tc ")
 	if userContent == "" {
