@@ -55,12 +55,12 @@ func Execute() {
 
 	chatGPTService := NewChatGPTService(config.OpenAIAPIKey)
 
-	bot.Handle("/gpt", chatGPTService.OnNewChat)
-	bot.Handle(tele.OnText, chatGPTService.OnReply)
-	bot.Handle("/set", chatGPTService.OnSet)
-	bot.Handle("/temperature", chatGPTService.OnTemperature)
-	bot.Handle("/help", onHelp)
-	bot.Handle("/tc", chatGPTService.OnTC)
+	bot.Handle("/gpt", chatGPTService.HandleNewChat)
+	bot.Handle(tele.OnText, chatGPTService.HandleTextReply)
+	bot.Handle("/set", chatGPTService.HandleSetCommand)
+	bot.Handle("/temperature", chatGPTService.HandleTemperatureCommand)
+	bot.Handle("/help", HandleHelpCommand)
+	bot.Handle("/tc", chatGPTService.HandleTCCommand)
 
 	log.Infof("Starting bot")
 	bot.Start()
