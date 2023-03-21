@@ -55,6 +55,37 @@ func (g *ChatGPTService) complete(request openai.ChatCompletionRequest) (openai.
 	return message, nil
 }
 
+func (g *ChatGPTService) reply(c tele.Context, chat *types.Chat) error {
+	message := c.Message()
+
+	request := openai.ChatCompletionRequest{
+		Model:    openai.GPT3Dot5Turbo,
+		Messages: chat.Messages,
+	}
+
+	_ = g.temperatures.Load(message.Chat.ID, request.Temperature)
+
+	log.Infof("request: %+v", request)
+
+	completedMessage, err := g.complete(request)
+	if err != nil {
+		return err
+	}
+	chat.Add(completedMessage)
+
+	replyMessage, err := c.Bot().Reply(message, chat.LastContent(), &tele.SendOptions{
+		ParseMode: "Markdown",
+	})
+	if err != nil {
+		return err
+	}
+
+	key := fmt.Sprintf("%d@%d", replyMessage.ID, replyMessage.Chat.ID)
+	log.Infof("message key: %s", key)
+
+	return g.chats.Save(key, chat)
+}
+
 func (g *ChatGPTService) OnNewChat(c tele.Context) error {
 	message := c.Message()
 
@@ -110,37 +141,6 @@ func (g *ChatGPTService) OnReply(c tele.Context) error {
 	chat.AddUserMessage(message.Text)
 
 	return g.reply(c, chat)
-}
-
-func (g *ChatGPTService) reply(c tele.Context, chat *types.Chat) error {
-	message := c.Message()
-
-	request := openai.ChatCompletionRequest{
-		Model:    openai.GPT3Dot5Turbo,
-		Messages: chat.Messages,
-	}
-
-	_ = g.temperatures.Load(message.Chat.ID, request.Temperature)
-
-	log.Infof("request: %+v", request)
-
-	completedMessage, err := g.complete(request)
-	if err != nil {
-		return err
-	}
-	chat.Add(completedMessage)
-
-	replyMessage, err := c.Bot().Reply(message, chat.LastContent(), &tele.SendOptions{
-		ParseMode: "Markdown",
-	})
-	if err != nil {
-		return err
-	}
-
-	key := fmt.Sprintf("%d@%d", replyMessage.ID, replyMessage.Chat.ID)
-	log.Infof("message key: %s", key)
-
-	return g.chats.Save(key, chat)
 }
 
 func (g *ChatGPTService) OnSet(c tele.Context) error {
