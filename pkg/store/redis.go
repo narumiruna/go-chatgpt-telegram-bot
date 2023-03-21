@@ -3,7 +3,7 @@ package store
 import (
 	"context"
 	"encoding/json"
-	"fmt"
+	"net"
 
 	"github.com/codingconcepts/env"
 	"github.com/narumiruna/go-chatgpt-telegram-bot/pkg/util"
@@ -30,7 +30,7 @@ func NewRedisClient(namespace string) *RedisStore {
 
 	return &RedisStore{
 		redis: redis.NewClient(&redis.Options{
-			Addr:     fmt.Sprintf("%s:%s", config.Host, config.Port),
+			Addr:     net.JoinHostPort(config.Host, config.Port),
 			Password: config.Password,
 			DB:       config.DB, // use default DB
 		}),
