@@ -20,8 +20,8 @@ type BotConfig struct {
 	// OpenAI API key
 	OpenAIAPIKey string `env:"OPENAI_API_KEY" required:"true"`
 
-	// Valid chat ID (whitelist)
-	ValidChatID []int64 `env:"VALID_CHAT_ID"`
+	// whitelist (chat ID)
+	BotWhitelist []int64 `env:"BOT_WHITELIST"`
 
 	// enable the /image command
 	EnableImageCommand bool `env:"ENABLE_IMAGE_COMMAND"`
@@ -49,8 +49,8 @@ func Execute() {
 		return
 	}
 
-	if len(config.ValidChatID) > 0 {
-		bot.Use(whitelist(config.ValidChatID...))
+	if len(config.BotWhitelist) > 0 {
+		bot.Use(whitelist(config.BotWhitelist...))
 	}
 
 	bot.Use(responseTimer)

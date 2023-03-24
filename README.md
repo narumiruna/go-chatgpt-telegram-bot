@@ -7,7 +7,7 @@ export TELEGRAM_BOT_TOKEN=
 export OPENAI_API_KEY=
 
 # whitelist
-export VALID_CHAT_ID=
+export BOT_WHITELIST=
 
 # use redis to store data
 export STORE_TYPE=redis
