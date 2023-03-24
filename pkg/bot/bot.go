@@ -22,6 +22,9 @@ type BotConfig struct {
 
 	// Valid chat ID (whitelist)
 	ValidChatID []int64 `env:"VALID_CHAT_ID"`
+
+	// enable the /image command
+	EnableImageCommand bool `env:"ENABLE_IMAGE_COMMAND"`
 }
 
 func Execute() {
@@ -54,7 +57,6 @@ func Execute() {
 	bot.Use(messageLogger)
 
 	chatGPTService := NewChatGPTService(config.OpenAIAPIKey)
-	imageService := NewImageService(config.OpenAIAPIKey)
 
 	bot.Handle("/gpt", chatGPTService.HandleNewChat)
 	bot.Handle(tele.OnText, chatGPTService.HandleTextReply)
@@ -62,7 +64,12 @@ func Execute() {
 	bot.Handle("/temperature", chatGPTService.HandleTemperatureCommand)
 	bot.Handle("/help", HandleHelpCommand)
 	bot.Handle("/tc", chatGPTService.HandleTCCommand)
-	bot.Handle("/image", imageService.HandleImageCommand)
+
+	if config.EnableImageCommand {
+		log.Infof("enabling /image command")
+		imageService := NewImageService(config.OpenAIAPIKey)
+		bot.Handle("/image", imageService.HandleImageCommand)
+	}
 
 	log.Infof("Starting bot")
 	bot.Start()
