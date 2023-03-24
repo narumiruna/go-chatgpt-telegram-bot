@@ -37,7 +37,7 @@ func (s *ImageService) HandleImageCommand(c tele.Context) error {
 
 	log.Infof("sending image: %s", resp.Data[0].URL)
 	photo := tele.Photo{File: tele.FromURL(resp.Data[0].URL)}
-	_, err = photo.Send(c.Bot(), c.Message().Sender, &tele.SendOptions{
+	_, err = photo.Send(c.Bot(), c.Recipient(), &tele.SendOptions{
 		ReplyTo: c.Message(),
 	})
 
