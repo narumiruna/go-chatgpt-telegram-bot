@@ -6,5 +6,7 @@ func HandleHelpCommand(c tele.Context) error {
 	return c.Reply(`/help - show this help message
 /gpt <message> - start a new chat
 /set <message> - set the system content
-/temperature <temperature> - set the temperature`)
+/temperature <temperature> - set the temperature
+/image <prompt> - generate an image
+`)
 }

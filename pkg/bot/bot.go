@@ -54,6 +54,7 @@ func Execute() {
 	bot.Use(messageLogger)
 
 	chatGPTService := NewChatGPTService(config.OpenAIAPIKey)
+	imageService := NewImageService(config.OpenAIAPIKey)
 
 	bot.Handle("/gpt", chatGPTService.HandleNewChat)
 	bot.Handle(tele.OnText, chatGPTService.HandleTextReply)
@@ -61,6 +62,7 @@ func Execute() {
 	bot.Handle("/temperature", chatGPTService.HandleTemperatureCommand)
 	bot.Handle("/help", HandleHelpCommand)
 	bot.Handle("/tc", chatGPTService.HandleTCCommand)
+	bot.Handle("/image", imageService.HandleImageCommand)
 
 	log.Infof("Starting bot")
 	bot.Start()
