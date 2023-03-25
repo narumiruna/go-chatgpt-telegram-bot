@@ -63,7 +63,7 @@ func (g *ChatGPTService) reply(c tele.Context, chat *types.Chat) error {
 		Messages: chat.Messages,
 	}
 
-	_ = g.temperatures.Load(message.Chat.ID, request.Temperature)
+	_ = g.temperatures.Load(message.Chat.ID, &request.Temperature)
 
 	log.Infof("request: %+v", request)
 
@@ -96,7 +96,8 @@ func (g *ChatGPTService) HandleNewChat(c tele.Context) error {
 	chat := types.NewChat()
 
 	var systemContent string
-	if err := g.systemContents.Load(message.Chat.ID, systemContent); err != nil {
+	if err := g.systemContents.Load(message.Chat.ID, &systemContent); err == nil {
+		log.Infof("found system content: %s", systemContent)
 		chat.AddSystemMessage(systemContent)
 	}
 
