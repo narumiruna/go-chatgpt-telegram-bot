@@ -3,7 +3,6 @@ package bot
 import (
 	"context"
 	"fmt"
-	"strconv"
 	"strings"
 
 	"github.com/avast/retry-go"
@@ -19,7 +18,6 @@ type ChatGPTService struct {
 	client         *openai.Client
 	chats          store.Store
 	systemContents store.Store
-	temperatures   store.Store
 }
 
 func NewChatGPTService(key string) *ChatGPTService {
@@ -27,7 +25,6 @@ func NewChatGPTService(key string) *ChatGPTService {
 		client:         openai.NewClient(key),
 		chats:          store.New("chats"),
 		systemContents: store.New("contents"),
-		temperatures:   store.New("temperatures"),
 	}
 }
 
@@ -62,8 +59,6 @@ func (g *ChatGPTService) reply(c tele.Context, chat *types.Chat) error {
 		Model:    openai.GPT3Dot5Turbo,
 		Messages: chat.Messages,
 	}
-
-	_ = g.temperatures.Load(message.Chat.ID, &request.Temperature)
 
 	log.Infof("request: %+v", request)
 
@@ -152,17 +147,6 @@ func (g *ChatGPTService) HandleSetCommand(c tele.Context) error {
 	}
 
 	return g.systemContents.Save(message.Chat.ID, content)
-}
-
-func (g *ChatGPTService) HandleTemperatureCommand(c tele.Context) error {
-	message := c.Message()
-
-	t, err := strconv.ParseFloat(message.Payload, 32)
-	if err != nil {
-		return err
-	}
-
-	return g.temperatures.Save(message.Chat.ID, float32(t))
 }
 
 func (g *ChatGPTService) HandleTCCommand(c tele.Context) error {
