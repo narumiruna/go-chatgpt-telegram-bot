@@ -61,7 +61,6 @@ func Execute() {
 	bot.Handle("/gpt", chatGPTService.HandleNewChat)
 	bot.Handle(tele.OnText, chatGPTService.HandleTextReply)
 	bot.Handle("/set", chatGPTService.HandleSetCommand)
-	bot.Handle("/temperature", chatGPTService.HandleTemperatureCommand)
 	bot.Handle("/help", HandleHelpCommand)
 	bot.Handle("/tc", chatGPTService.HandleTCCommand)
 
