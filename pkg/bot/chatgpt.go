@@ -153,12 +153,11 @@ func (g *ChatGPTService) HandleSetCommand(c tele.Context) error {
 	return g.systemContents.Save(message.Chat.ID, content)
 }
 
-func (g *ChatGPTService) HandleTCCommand(c tele.Context) error {
+func (g *ChatGPTService) HandleTranslateCommand(c tele.Context, target string) error {
 	message := c.Message()
 
 	chat := types.NewChat()
-	systemContent := "You are a translation assistant." +
-		" You will translate all messages to Traditional Chinese with traditional characters."
+	systemContent := fmt.Sprintf("You are a translation assistant. You will translate all messages to %s.", target)
 
 	chat.AddSystemMessage(systemContent)
 
@@ -174,4 +173,16 @@ func (g *ChatGPTService) HandleTCCommand(c tele.Context) error {
 	chat.AddUserMessage(userContent)
 
 	return g.reply(c, chat)
+}
+
+func (g *ChatGPTService) HandleTCCommand(c tele.Context) error {
+	return g.HandleTranslateCommand(c, "Traditional Chinese")
+}
+
+func (g *ChatGPTService) HandleENCommand(c tele.Context) error {
+	return g.HandleTranslateCommand(c, "English")
+}
+
+func (g *ChatGPTService) HandleJPCommand(c tele.Context) error {
+	return g.HandleTranslateCommand(c, "Japanese")
 }
