@@ -37,3 +37,9 @@ func (s *MemoryStore) Save(key, value interface{}) error {
 	s.memory[cast(key)] = string(data)
 	return nil
 }
+
+func (s *MemoryStore) Delete(key interface{}) error {
+	defer util.Timer("memory store delete")()
+	delete(s.memory, cast(key))
+	return nil
+}

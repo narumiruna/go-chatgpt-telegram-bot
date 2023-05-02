@@ -37,10 +37,13 @@ func NewRedisClient(namespace string) *RedisStore {
 		namespace: namespace,
 	}
 }
+func (s *RedisStore) insertNamespace(key interface{}) string {
+	return s.namespace + ":" + cast(key)
+}
 
 func (s *RedisStore) Load(key, value interface{}) error {
 	defer util.Timer("redis store load")()
-	data, err := s.redis.Get(context.Background(), s.namespace+":"+cast(key)).Result()
+	data, err := s.redis.Get(context.Background(), s.insertNamespace(key)).Result()
 	if err != nil {
 		return err
 	}
@@ -53,5 +56,10 @@ func (s *RedisStore) Save(key, value interface{}) error {
 	if err != nil {
 		return err
 	}
-	return s.redis.Set(context.Background(), s.namespace+":"+cast(key), data, 0).Err()
+	return s.redis.Set(context.Background(), s.insertNamespace(key), data, 0).Err()
+}
+
+func (s *RedisStore) Delete(key interface{}) error {
+	defer util.Timer("redis store save")()
+	return s.redis.Del(context.Background(), s.insertNamespace(key)).Err()
 }

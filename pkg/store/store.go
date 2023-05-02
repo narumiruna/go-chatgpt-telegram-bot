@@ -9,6 +9,7 @@ import (
 type Store interface {
 	Load(key, value interface{}) error
 	Save(key, value interface{}) error
+	Delete(key interface{}) error
 }
 
 func New(namespace string) Store {
