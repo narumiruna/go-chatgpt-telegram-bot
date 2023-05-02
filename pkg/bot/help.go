@@ -7,5 +7,7 @@ func HandleHelpCommand(c tele.Context) error {
 /gpt <message> - start a new chat
 /set <message> - set the system content
 /tc <message> - translate message to Chinese
+/en <message> - translate message to English
+/jp <message> - translate message to Japanese
 `)
 }
