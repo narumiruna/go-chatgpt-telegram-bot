@@ -153,7 +153,7 @@ func (g *ChatGPTService) HandleSetCommand(c tele.Context) error {
 	return g.systemContents.Save(message.Chat.ID, content)
 }
 
-func (g *ChatGPTService) HandleTranslateCommand(c tele.Context, target string) error {
+func (g *ChatGPTService) handleTranslateCommand(c tele.Context, target string) error {
 	message := c.Message()
 
 	chat := types.NewChat()
@@ -176,13 +176,13 @@ func (g *ChatGPTService) HandleTranslateCommand(c tele.Context, target string) e
 }
 
 func (g *ChatGPTService) HandleTCCommand(c tele.Context) error {
-	return g.HandleTranslateCommand(c, "Traditional Chinese")
+	return g.handleTranslateCommand(c, "Traditional Chinese")
 }
 
 func (g *ChatGPTService) HandleENCommand(c tele.Context) error {
-	return g.HandleTranslateCommand(c, "English")
+	return g.handleTranslateCommand(c, "English")
 }
 
 func (g *ChatGPTService) HandleJPCommand(c tele.Context) error {
-	return g.HandleTranslateCommand(c, "Japanese")
+	return g.handleTranslateCommand(c, "Japanese")
 }
