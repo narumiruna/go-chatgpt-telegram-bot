@@ -137,6 +137,10 @@ func (g *ChatGPTService) HandleTextReply(c tele.Context) error {
 	return g.reply(c, chat)
 }
 
+func (g *ChatGPTService) HandleResetCommand(c tele.Context) error {
+	return g.systemContents.Delete(c.Message().Chat.ID)
+}
+
 func (g *ChatGPTService) HandleSetCommand(c tele.Context) error {
 	message := c.Message()
 
