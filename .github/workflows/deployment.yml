@@ -7,8 +7,8 @@ on:
       - "v*.*.*"
 
 env:
-  UNIT: chatgpt-bot.service
-  WORKDIR: /home/ec2-user/chatgpt-bot
+  UNIT: com.narumi.chatgpt-bot
+  WORKDIR: /Users/narumi/services/chatgpt-bot
 
 jobs:
   build:
@@ -17,7 +17,7 @@ jobs:
     strategy:
       matrix:
         go-version: [1.18.x]
-        os: [linux]
+        os: [darwin]
         arch: [arm64]
 
     steps:
@@ -72,19 +72,38 @@ jobs:
       - name: Stop and disable service
         continue-on-error: true
         run: |
-          sudo systemctl stop ${{ env.UNIT }}
-          sudo systemctl disable ${{ env.UNIT }}
-          sudo systemctl reset-failed ${{ env.UNIT }}
+          launchctl stop ${{ env.UNIT }}
+          launchctl disable ${{ env.UNIT }}
 
       - name: Copy files
         run: |
-          sudo mkdir -p ${{ env.WORKDIR }}
-          sudo cp chatgpt-bot ${{ env.WORKDIR }}
-          sudo cp .env ${{ env.WORKDIR }}
-          sudo cp ${{ env.UNIT }} /etc/systemd/system
+          mkdir -p ${{ env.WORKDIR }}
+          cp chatgpt-bot ${{ env.WORKDIR }}
+          cp .env ${{ env.WORKDIR }}
+          cp chatgpt-bot.plist /Users/narumi/Library/LaunchAgents
 
       - name: Start service
         run: |
-          sudo systemctl daemon-reload
-          sudo systemctl enable ${{ env.UNIT }}
-          sudo systemctl start ${{ env.UNIT }}
+          launchctl load com.narumi.chatgpt-bot
+          launchctl enable ${{ env.UNIT }}
+          launchctl start ${{ env.UNIT }}
+
+      # - name: Stop and disable service
+      #   continue-on-error: true
+      #   run: |
+      #     sudo systemctl stop ${{ env.UNIT }}
+      #     sudo systemctl disable ${{ env.UNIT }}
+      #     sudo systemctl reset-failed ${{ env.UNIT }}
+
+      # - name: Copy files
+      #   run: |
+      #     sudo mkdir -p ${{ env.WORKDIR }}
+      #     sudo cp chatgpt-bot ${{ env.WORKDIR }}
+      #     sudo cp .env ${{ env.WORKDIR }}
+      #     sudo cp ${{ env.UNIT }} /etc/systemd/system
+
+      # - name: Start service
+      #   run: |
+      #     sudo systemctl daemon-reload
+      #     sudo systemctl enable ${{ env.UNIT }}
+      #     sudo systemctl start ${{ env.UNIT }}
