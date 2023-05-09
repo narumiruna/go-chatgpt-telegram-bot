@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<!DOCTYPE plist PUBLIC "-//Apple Computer//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
 <plist version="1.0">
   <dict>
     <key>Label</key>
@@ -8,24 +8,17 @@
     <array>
       <string>/Users/narumi/services/chatgpt-bot/chatgpt-bot</string>
     </array>
+    <key>KeepAlive</key>
+    <true />
+    <key>RunAtLoad</key>
+    <true />
     <key>UserName</key>
     <string>narumi</string>
     <key>WorkingDirectory</key>
     <string>/Users/narumi/services/chatgpt-bot</string>
-    <key>RunAtLoad</key>
-    <true/>
     <key>StandardOutPath</key>
-    <string>/Users/narumi/Library/Logs/com.narumi.chatgpt-bot/stdout.log</string>
+    <string>/Users/narumi/services/chatgpt-bot/stdout.log</string>
     <key>StandardErrorPath</key>
-    <string>/Users/narumi/Library/Logs/com.narumi.chatgpt-bot/stderr.log</string>
-    <key>EnvironmentVariables</key>
-    <dict>
-      <key>ACTIONS_RUNNER_SVC</key>
-      <string>1</string>
-    </dict>
-    <key>ProcessType</key>
-    <string>Interactive</string>
-    <key>SessionCreate</key>
-    <true/>
+    <string>/Users/narumi/services/chatgpt-bot/stderr.log</string>
   </dict>
 </plist>

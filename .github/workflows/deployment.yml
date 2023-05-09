@@ -3,8 +3,8 @@ name: Deployment
 on:
   workflow_dispatch:
   push:
-    tags:
-      - "v*.*.*"
+    # tags:
+    #   - "v*.*.*"
 
 env:
   UNIT: com.narumi.chatgpt-bot
@@ -73,37 +73,16 @@ jobs:
         continue-on-error: true
         run: |
           launchctl stop ${{ env.UNIT }}
-          launchctl disable ${{ env.UNIT }}
+          launchctl unload chatgpt-bot.plist
 
       - name: Copy files
         run: |
           mkdir -p ${{ env.WORKDIR }}
           cp chatgpt-bot ${{ env.WORKDIR }}
           cp .env ${{ env.WORKDIR }}
-          cp chatgpt-bot.plist /Users/narumi/Library/LaunchAgents
+          cp chatgpt-bot.plist ${{ env.WORKDIR }}
 
       - name: Start service
         run: |
-          launchctl load com.narumi.chatgpt-bot
-          launchctl enable ${{ env.UNIT }}
+          launchctl load -w chatgpt-bot.plist
           launchctl start ${{ env.UNIT }}
-
-      # - name: Stop and disable service
-      #   continue-on-error: true
-      #   run: |
-      #     sudo systemctl stop ${{ env.UNIT }}
-      #     sudo systemctl disable ${{ env.UNIT }}
-      #     sudo systemctl reset-failed ${{ env.UNIT }}
-
-      # - name: Copy files
-      #   run: |
-      #     sudo mkdir -p ${{ env.WORKDIR }}
-      #     sudo cp chatgpt-bot ${{ env.WORKDIR }}
-      #     sudo cp .env ${{ env.WORKDIR }}
-      #     sudo cp ${{ env.UNIT }} /etc/systemd/system
-
-      # - name: Start service
-      #   run: |
-      #     sudo systemctl daemon-reload
-      #     sudo systemctl enable ${{ env.UNIT }}
-      #     sudo systemctl start ${{ env.UNIT }}
