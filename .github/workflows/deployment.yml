@@ -9,6 +9,7 @@ on:
 env:
   UNIT: com.narumi.chatgpt-bot
   WORKDIR: /Users/narumi/services/chatgpt-bot
+  PLIST_PATH: /Users/narumi/Library/LaunchAgents
 
 jobs:
   build:
@@ -68,6 +69,7 @@ jobs:
 
       - name: Stop and disable service
         continue-on-error: true
+        working-directory: ${{ env.PLIST_PATH }}
         run: |
           launchctl stop ${{ env.UNIT }}
           launchctl unload chatgpt-bot.plist
@@ -78,9 +80,10 @@ jobs:
           chmod +x chatgpt-bot
           cp chatgpt-bot ${{ env.WORKDIR }}
           cp .env ${{ env.WORKDIR }}
-          cp chatgpt-bot.plist ${{ env.WORKDIR }}
+          cp chatgpt-bot.plist ${{ env.PLIST_PATH }}
 
       - name: Start service
+      working-directory: ${{ env.PLIST_PATH }}
         run: |
           launchctl load -w chatgpt-bot.plist
           launchctl start ${{ env.UNIT }}
