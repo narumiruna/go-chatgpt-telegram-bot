@@ -83,7 +83,7 @@ jobs:
           cp chatgpt-bot.plist ${{ env.PLIST_PATH }}
 
       - name: Start service
-      working-directory: ${{ env.PLIST_PATH }}
+        working-directory: ${{ env.PLIST_PATH }}
         run: |
           launchctl load -w chatgpt-bot.plist
           launchctl start ${{ env.UNIT }}
