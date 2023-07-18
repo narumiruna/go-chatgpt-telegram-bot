@@ -66,6 +66,7 @@ func Execute() {
 	bot.Handle("/tc", chatGPTService.HandleTCCommand)
 	bot.Handle("/en", chatGPTService.HandleENCommand)
 	bot.Handle("/jp", chatGPTService.HandleJPCommand)
+	bot.Handle("/polish", chatGPTService.HandlePolishCommand)
 
 	if config.EnableImageCommand {
 		log.Infof("enabling /image command")

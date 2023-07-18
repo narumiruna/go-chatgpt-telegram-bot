@@ -186,3 +186,30 @@ func (g *ChatGPTService) HandleENCommand(c tele.Context) error {
 func (g *ChatGPTService) HandleJPCommand(c tele.Context) error {
 	return g.handleTranslateCommand(c, "Japanese")
 }
+
+func (g *ChatGPTService) HandlePolishCommand(c tele.Context) error {
+	message := c.Message()
+
+	userContent := strings.TrimPrefix(message.Text, "/polish ")
+	if userContent == "" {
+		log.Infof("ignore empty content")
+		return nil
+	}
+
+	chat := types.NewChat()
+
+	var systemContent string
+	if err := g.systemContents.Load(message.Chat.ID, &systemContent); err == nil {
+		log.Infof("found system content: %s", systemContent)
+		chat.AddSystemMessage(systemContent)
+	}
+
+	chat.AddUserMessage("Please polish the following text:")
+
+	if message.IsReply() {
+		chat.AddUserMessage(message.ReplyTo.Text)
+	}
+
+	chat.AddUserMessage(userContent)
+	return g.reply(c, chat)
+}
