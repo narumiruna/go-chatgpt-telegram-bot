@@ -9,5 +9,6 @@ func HandleHelpCommand(c tele.Context) error {
 /tc <message> - translate message to Chinese
 /en <message> - translate message to English
 /jp <message> - translate message to Japanese
+/polish <message> - polish the message
 `)
 }
