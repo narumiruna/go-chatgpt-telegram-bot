@@ -62,7 +62,7 @@ func (g *ChatGPTService) reply(c tele.Context, chat *types.Chat) error {
 		Model:       openai.GPT3Dot5Turbo,
 		Messages:    chat.Messages,
 		Temperature: 0.0,
-		MaxTokens:   64,
+		MaxTokens:   1024,
 	}
 
 	log.Infof("request: %+v", request)
