@@ -16,8 +16,10 @@ import (
 
 const defaultSystemContent = `
 - 永遠使用繁體中文
-- 回答盡可能簡短，不要太長
+- 回答盡可能簡短
 `
+
+const defaultChatWindow = 5
 
 type ChatGPTService struct {
 	client *openai.Client
@@ -60,9 +62,9 @@ func (g *ChatGPTService) reply(c tele.Context, chat *types.Chat) error {
 
 	request := openai.ChatCompletionRequest{
 		Model:       openai.GPT3Dot5Turbo,
-		Messages:    chat.Messages,
+		Messages:    chat.Messages(),
 		Temperature: 0.0,
-		MaxTokens:   1024,
+		MaxTokens:   2048,
 	}
 
 	log.Infof("request: %+v", request)
@@ -93,8 +95,8 @@ func (g *ChatGPTService) HandleNewChat(c tele.Context) error {
 		return nil
 	}
 
-	chat := types.NewChat()
-	chat.AddSystemMessage(defaultSystemContent)
+	chat := types.NewChatWindow(defaultChatWindow)
+	chat.SetSystemMessage(defaultSystemContent)
 
 	if message.IsReply() {
 		chat.AddUserMessage(message.ReplyTo.Text)
@@ -121,7 +123,7 @@ func (g *ChatGPTService) HandleTextReply(c tele.Context) error {
 	key := fmt.Sprintf("%d@%d", message.ReplyTo.ID, message.Chat.ID)
 	log.Infof("message key: %s", key)
 
-	chat := types.NewChat()
+	chat := types.NewChatWindow(defaultChatWindow)
 	err := g.chats.Load(key, chat)
 	if err != nil {
 		// ignore if the replyTo message is not from the bot
@@ -140,10 +142,10 @@ func (g *ChatGPTService) HandleTextReply(c tele.Context) error {
 func (g *ChatGPTService) handleTranslateCommand(c tele.Context, target string) error {
 	message := c.Message()
 
-	chat := types.NewChat()
+	chat := types.NewChatWindow(defaultChatWindow)
 	systemContent := fmt.Sprintf("You are a translation assistant. You will translate all messages to %s.", target)
 
-	chat.AddSystemMessage(systemContent)
+	chat.SetSystemMessage(systemContent)
 
 	if message.IsReply() {
 		chat.AddUserMessage(message.ReplyTo.Text)
@@ -180,7 +182,7 @@ func (g *ChatGPTService) HandlePolishCommand(c tele.Context) error {
 		return nil
 	}
 
-	chat := types.NewChat()
+	chat := types.NewChatWindow(defaultChatWindow)
 	chat.AddUserMessage("Please polish the following text:")
 
 	if message.IsReply() {
