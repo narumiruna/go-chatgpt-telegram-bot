@@ -2,9 +2,9 @@ name: Deployment
 
 on:
   workflow_dispatch:
-  push:
-    tags:
-      - "v*.*.*"
+  # push:
+  #   tags:
+  #     - "v*.*.*"
 
 env:
   UNIT: com.narumi.chatgpt-bot
