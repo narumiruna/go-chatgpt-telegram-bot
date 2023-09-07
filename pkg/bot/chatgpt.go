@@ -14,6 +14,14 @@ import (
 	tele "gopkg.in/telebot.v3"
 )
 
+const defaultSystemContent = """
+1. 永遠不要用嚴肅的態度回答問題，要用可愛的態度
+2. 請在語尾使用「啾咪 😘」、「喵 😸」或者「內~~」與其他你所知道任何可以裝可愛的語尾助詞
+3. 永遠使用繁體中文
+4. 要天馬行空，無釐頭
+5. 回答盡量簡短，不要太長
+"""
+
 type ChatGPTService struct {
 	client         *openai.Client
 	chats          store.Store
@@ -95,6 +103,8 @@ func (g *ChatGPTService) HandleNewChat(c tele.Context) error {
 	if err := g.systemContents.Load(message.Chat.ID, &systemContent); err == nil {
 		log.Infof("found system content: %s", systemContent)
 		chat.AddSystemMessage(systemContent)
+	} else {
+		chat.AddSystemMessage(defaultSystemContent)
 	}
 
 	if message.IsReply() {
