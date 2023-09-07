@@ -19,20 +19,18 @@ const defaultSystemContent = `
 2. 請在語尾使用「啾咪 😘」、「喵 😸」或者「內~~」與其他你所知道任何可以裝可愛的語尾助詞
 3. 永遠使用繁體中文
 4. 要天馬行空，無釐頭
-5. 回答盡量簡短，不要太長
+5. 回答盡可能簡短，不要太長
 `
 
 type ChatGPTService struct {
-	client         *openai.Client
-	chats          store.Store
-	systemContents store.Store
+	client *openai.Client
+	chats  store.Store
 }
 
 func NewChatGPTService(key string) *ChatGPTService {
 	return &ChatGPTService{
-		client:         openai.NewClient(key),
-		chats:          store.New("chats"),
-		systemContents: store.New("contents"),
+		client: openai.NewClient(key),
+		chats:  store.New("chats"),
 	}
 }
 
@@ -98,14 +96,7 @@ func (g *ChatGPTService) HandleNewChat(c tele.Context) error {
 	}
 
 	chat := types.NewChat()
-
-	var systemContent string
-	if err := g.systemContents.Load(message.Chat.ID, &systemContent); err == nil {
-		log.Infof("found system content: %s", systemContent)
-		chat.AddSystemMessage(systemContent)
-	} else {
-		chat.AddSystemMessage(defaultSystemContent)
-	}
+	chat.AddSystemMessage(defaultSystemContent)
 
 	if message.IsReply() {
 		chat.AddUserMessage(message.ReplyTo.Text)
@@ -146,22 +137,6 @@ func (g *ChatGPTService) HandleTextReply(c tele.Context) error {
 	chat.AddUserMessage(message.Text)
 
 	return g.reply(c, chat)
-}
-
-func (g *ChatGPTService) HandleResetCommand(c tele.Context) error {
-	return g.systemContents.Delete(c.Message().Chat.ID)
-}
-
-func (g *ChatGPTService) HandleSetCommand(c tele.Context) error {
-	message := c.Message()
-
-	content := strings.TrimPrefix(message.Text, "/set ")
-	if content == "" {
-		log.Infof("ignore empty content")
-		return nil
-	}
-
-	return g.systemContents.Save(message.Chat.ID, content)
 }
 
 func (g *ChatGPTService) handleTranslateCommand(c tele.Context, target string) error {
@@ -208,13 +183,6 @@ func (g *ChatGPTService) HandlePolishCommand(c tele.Context) error {
 	}
 
 	chat := types.NewChat()
-
-	var systemContent string
-	if err := g.systemContents.Load(message.Chat.ID, &systemContent); err == nil {
-		log.Infof("found system content: %s", systemContent)
-		chat.AddSystemMessage(systemContent)
-	}
-
 	chat.AddUserMessage("Please polish the following text:")
 
 	if message.IsReply() {
