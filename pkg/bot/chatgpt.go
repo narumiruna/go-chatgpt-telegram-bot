@@ -15,7 +15,7 @@ import (
 )
 
 const defaultSystemContent = `
-- 永遠使用繁體中文
+- 永遠使用繁體中文和台灣用語
 - 回答盡可能簡短
 `
 
@@ -162,7 +162,7 @@ func (g *ChatGPTService) handleTranslateCommand(c tele.Context, target string) e
 }
 
 func (g *ChatGPTService) HandleTCCommand(c tele.Context) error {
-	return g.handleTranslateCommand(c, "Traditional Chinese")
+	return g.handleTranslateCommand(c, "Taiwanese")
 }
 
 func (g *ChatGPTService) HandleENCommand(c tele.Context) error {
