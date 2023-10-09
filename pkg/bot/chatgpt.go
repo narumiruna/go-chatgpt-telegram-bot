@@ -162,7 +162,7 @@ func (g *ChatGPTService) handleTranslateCommand(c tele.Context, target string) e
 }
 
 func (g *ChatGPTService) HandleTCCommand(c tele.Context) error {
-	return g.handleTranslateCommand(c, "Taiwanese")
+	return g.handleTranslateCommand(c, "Taiwanese, 你必須要使用繁體中文和台灣用語")
 }
 
 func (g *ChatGPTService) HandleENCommand(c tele.Context) error {
