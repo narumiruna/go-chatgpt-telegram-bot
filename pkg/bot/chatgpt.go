@@ -15,7 +15,7 @@ import (
 )
 
 const defaultSystemContent = `
-- 永遠使用繁體中文和台灣用語
+- 若使用中文，使用繁體中文和台灣用語
 - 回答盡可能簡短
 `
 
