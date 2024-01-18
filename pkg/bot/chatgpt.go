@@ -19,8 +19,6 @@ const defaultSystemContent = `
 - 回答盡可能簡短
 `
 
-const defaultChatWindow = 5
-
 type ChatGPTService struct {
 	client *openai.Client
 	chats  store.Store
@@ -95,7 +93,7 @@ func (g *ChatGPTService) HandleNewChat(c tele.Context) error {
 		return nil
 	}
 
-	chat := types.NewChatWindow(defaultChatWindow)
+	chat := types.NewChat()
 	chat.SetSystemMessage(defaultSystemContent)
 
 	if message.IsReply() {
@@ -123,7 +121,7 @@ func (g *ChatGPTService) HandleTextReply(c tele.Context) error {
 	key := fmt.Sprintf("%d@%d", message.ReplyTo.ID, message.Chat.ID)
 	log.Infof("message key: %s", key)
 
-	chat := types.NewChatWindow(defaultChatWindow)
+	chat := types.NewChat()
 	err := g.chats.Load(key, chat)
 	if err != nil {
 		// ignore if the replyTo message is not from the bot
@@ -142,7 +140,7 @@ func (g *ChatGPTService) HandleTextReply(c tele.Context) error {
 func (g *ChatGPTService) handleTranslateCommand(c tele.Context, target string) error {
 	message := c.Message()
 
-	chat := types.NewChatWindow(defaultChatWindow)
+	chat := types.NewChat()
 	systemContent := fmt.Sprintf("You are a translation assistant. You will translate all messages to %s.", target)
 
 	chat.SetSystemMessage(systemContent)
@@ -182,7 +180,7 @@ func (g *ChatGPTService) HandlePolishCommand(c tele.Context) error {
 		return nil
 	}
 
-	chat := types.NewChatWindow(defaultChatWindow)
+	chat := types.NewChat()
 	chat.AddUserMessage("Please polish the following text:")
 
 	if message.IsReply() {
