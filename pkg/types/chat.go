@@ -5,8 +5,7 @@ import "github.com/sashabaranov/go-openai"
 type Chat struct {
 	Window int
 
-	system   string
-	messages []openai.ChatCompletionMessage
+	Messages []openai.ChatCompletionMessage `json:"messages"`
 }
 
 func NewChat() *Chat {
@@ -18,9 +17,9 @@ func NewChatWindow(window int) *Chat {
 }
 
 func (c *Chat) Add(message openai.ChatCompletionMessage) {
-	c.messages = append(c.messages, message)
-	if c.Window > 0 && len(c.messages) > c.Window {
-		c.messages = c.messages[len(c.messages)-c.Window:]
+	c.Messages = append(c.Messages, message)
+	if c.Window > 0 && len(c.Messages) > c.Window {
+		c.Messages = c.Messages[len(c.Messages)-c.Window:]
 	}
 }
 
@@ -37,26 +36,27 @@ func (c *Chat) AddAssistantMessage(content string) {
 }
 
 func (c *Chat) SetSystemMessage(content string) {
-	c.system = content
+	// c.System = content
+	c.addMessage(openai.ChatMessageRoleSystem, content)
 }
 
 func (c *Chat) LastContent() string {
-	if len(c.messages) == 0 {
+	if len(c.Messages) == 0 {
 		return ""
 	}
-	return c.messages[len(c.messages)-1].Content
+	return c.Messages[len(c.Messages)-1].Content
 }
 
-func (c *Chat) Messages() []openai.ChatCompletionMessage {
-	var messages []openai.ChatCompletionMessage
+// func (c *Chat) Messages() []openai.ChatCompletionMessage {
+// 	var messages []openai.ChatCompletionMessage
 
-	if c.system != "" {
-		messages = append(messages, openai.ChatCompletionMessage{
-			Role:    openai.ChatMessageRoleAssistant,
-			Content: c.system,
-		})
-	}
+// 	if c.System != "" {
+// 		messages = append(messages, openai.ChatCompletionMessage{
+// 			Role:    openai.ChatMessageRoleAssistant,
+// 			Content: c.System,
+// 		})
+// 	}
 
-	messages = append(messages, c.messages...)
-	return messages
-}
+// 	messages = append(messages, c.RawMessages...)
+// 	return messages
+// }
