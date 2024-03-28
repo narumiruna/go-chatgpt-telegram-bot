@@ -14,7 +14,7 @@ import (
 	tele "gopkg.in/telebot.v3"
 )
 
-const defaultSystemContent = `
+const systemMessage = `
 - 若使用中文，使用繁體中文和台灣用語
 - 回答盡可能簡短
 `
@@ -94,7 +94,7 @@ func (g *ChatGPTService) HandleNewChat(c tele.Context) error {
 	}
 
 	chat := types.NewChat()
-	chat.SetSystemMessage(defaultSystemContent)
+	chat.AddSystemMessage(systemMessage)
 
 	if message.IsReply() {
 		chat.AddUserMessage(message.ReplyTo.Text)
@@ -143,7 +143,7 @@ func (g *ChatGPTService) handleTranslateCommand(c tele.Context, target string) e
 	chat := types.NewChat()
 	systemContent := fmt.Sprintf("You are a translation assistant. You will translate all messages to %s.", target)
 
-	chat.SetSystemMessage(systemContent)
+	chat.AddSystemMessage(systemContent)
 
 	if message.IsReply() {
 		chat.AddUserMessage(message.ReplyTo.Text)
