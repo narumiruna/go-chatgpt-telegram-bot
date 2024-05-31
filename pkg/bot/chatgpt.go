@@ -59,7 +59,7 @@ func (g *ChatGPTService) reply(c tele.Context, chat *types.Chat) error {
 	message := c.Message()
 
 	request := openai.ChatCompletionRequest{
-		Model:       openai.GPT4Turbo,
+		Model:       openai.GPT4o,
 		Messages:    chat.Messages,
 		Temperature: 0.0,
 		MaxTokens:   1024,
