@@ -22,12 +22,19 @@ const systemMessage = `
 type ChatGPTService struct {
 	client *openai.Client
 	chats  store.Store
+
+	Model       string  `json:"model"`
+	MaxTokens   int     `json:"maxTokens"`
+	Temperature float32 `json:"temperature"`
 }
 
 func NewChatGPTService(key string) *ChatGPTService {
 	return &ChatGPTService{
-		client: openai.NewClient(key),
-		chats:  store.New("chats"),
+		client:      openai.NewClient(key),
+		chats:       store.New("chats"),
+		Model:       openai.GPT4o,
+		MaxTokens:   0,
+		Temperature: 0,
 	}
 }
 
@@ -55,19 +62,19 @@ func (g *ChatGPTService) complete(request openai.ChatCompletionRequest) (openai.
 	return message, nil
 }
 
-func (g *ChatGPTService) reply(c tele.Context, chat *types.Chat) error {
+func (s *ChatGPTService) reply(c tele.Context, chat *types.Chat) error {
 	message := c.Message()
 
 	request := openai.ChatCompletionRequest{
-		Model:       openai.GPT4o,
+		Model:       s.Model,
 		Messages:    chat.Messages,
-		Temperature: 0.0,
-		MaxTokens:   1024,
+		Temperature: s.Temperature,
+		MaxTokens:   s.MaxTokens,
 	}
 
 	log.Infof("request: %+v", request)
 
-	completedMessage, err := g.complete(request)
+	completedMessage, err := s.complete(request)
 	if err != nil {
 		return err
 	}
@@ -81,7 +88,7 @@ func (g *ChatGPTService) reply(c tele.Context, chat *types.Chat) error {
 	key := fmt.Sprintf("%d@%d", replyMessage.ID, replyMessage.Chat.ID)
 	log.Infof("message key: %s", key)
 
-	return g.chats.Save(key, chat)
+	return s.chats.Save(key, chat)
 }
 
 func (g *ChatGPTService) HandleNewChat(c tele.Context) error {
