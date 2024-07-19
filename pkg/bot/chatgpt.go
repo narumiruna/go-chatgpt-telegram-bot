@@ -29,7 +29,7 @@ func NewChatGPTService(key string) *ChatGPTService {
 	return &ChatGPTService{
 		client:      openai.NewClient(key),
 		chats:       store.New("chats"),
-		Model:       openai.GPT4o,
+		Model:       "gpt-4o-mini",
 		MaxTokens:   0,
 		Temperature: 0,
 	}
