@@ -66,7 +66,7 @@ func Execute() {
 	gpt4oService := ChatGPTService{
 		Client:      openai.NewClient(config.OpenAIAPIKey),
 		ChatStore:   chatStore,
-		Model:       "chatgpt-4o-latest",
+		Model:       "gpt-4o-mini",
 		Temperature: temperature,
 		MaxTokens:   maxTokens,
 	}
