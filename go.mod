@@ -7,7 +7,7 @@ require (
 	github.com/codingconcepts/env v0.0.0-20200821220118-a8fbf8d84482
 	github.com/joho/godotenv v1.5.1
 	github.com/redis/go-redis/v9 v9.6.1
-	github.com/sashabaranov/go-openai v1.24.1
+	github.com/sashabaranov/go-openai v1.30.0
 	github.com/sirupsen/logrus v1.9.3
 	github.com/stretchr/testify v1.8.1
 	gopkg.in/telebot.v3 v3.3.8
