@@ -17,8 +17,8 @@ import (
 const systemMessage = `你主要使用台灣用語的繁體中文，並會避免使用簡體中文和中國用語。`
 
 type ChatGPTService struct {
-	client *openai.Client
-	chats  store.Store
+	Client    *openai.Client
+	ChatStore store.Store
 
 	Model       string  `json:"model"`
 	MaxTokens   int     `json:"maxTokens"`
@@ -27,8 +27,8 @@ type ChatGPTService struct {
 
 func NewChatGPTService(key string) *ChatGPTService {
 	return &ChatGPTService{
-		client:      openai.NewClient(key),
-		chats:       store.New("chats"),
+		Client:      openai.NewClient(key),
+		ChatStore:   store.New("chats"),
 		Model:       "gpt-4o-mini",
 		MaxTokens:   0,
 		Temperature: 0,
@@ -41,7 +41,7 @@ func (g *ChatGPTService) complete(request openai.ChatCompletionRequest) (openai.
 	err := retry.Do(
 		func() error {
 			defer util.Timer("openai chat completion")()
-			resp, err := g.client.CreateChatCompletion(ctx, request)
+			resp, err := g.Client.CreateChatCompletion(ctx, request)
 			if err != nil {
 				return err
 			}
@@ -85,7 +85,7 @@ func (s *ChatGPTService) reply(c tele.Context, chat *types.Chat) error {
 	key := fmt.Sprintf("%d@%d", replyMessage.ID, replyMessage.Chat.ID)
 	log.Infof("message key: %s", key)
 
-	return s.chats.Save(key, chat)
+	return s.ChatStore.Save(key, chat)
 }
 
 func (g *ChatGPTService) HandleNewChat(c tele.Context) error {
@@ -126,7 +126,7 @@ func (g *ChatGPTService) HandleTextReply(c tele.Context) error {
 	log.Infof("message key: %s", key)
 
 	chat := types.NewChat()
-	err := g.chats.Load(key, chat)
+	err := g.ChatStore.Load(key, chat)
 	if err != nil {
 		// ignore if the replyTo message is not from the bot
 		if c.Bot().Me.ID != message.ReplyTo.Sender.ID {

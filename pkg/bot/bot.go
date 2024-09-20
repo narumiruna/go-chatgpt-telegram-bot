@@ -64,8 +64,8 @@ func Execute() {
 
 	chatStore := store.New("chats")
 	gpt4oService := ChatGPTService{
-		client:      openai.NewClient(config.OpenAIAPIKey),
-		chats:       chatStore,
+		Client:      openai.NewClient(config.OpenAIAPIKey),
+		ChatStore:   chatStore,
 		Model:       "chatgpt-4o-latest",
 		Temperature: temperature,
 		MaxTokens:   maxTokens,
@@ -81,8 +81,8 @@ func Execute() {
 
 	// o1 preview model
 	o1Service := ChatGPTService{
-		client:      openai.NewClient(config.OpenAIAPIKey),
-		chats:       chatStore,
+		Client:      openai.NewClient(config.OpenAIAPIKey),
+		ChatStore:   chatStore,
 		Model:       "o1-preview",
 		Temperature: temperature,
 		MaxTokens:   maxTokens,
