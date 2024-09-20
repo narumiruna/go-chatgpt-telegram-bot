@@ -5,13 +5,19 @@ import (
 
 	"github.com/codingconcepts/env"
 	"github.com/joho/godotenv"
+	"github.com/narumiruna/go-chatgpt-telegram-bot/pkg/store"
+	openai "github.com/sashabaranov/go-openai"
 
 	log "github.com/sirupsen/logrus"
 	tele "gopkg.in/telebot.v3"
 )
 
-const defaultEnvFile = ".env"
-const defaultTimeout = 10 * time.Second
+const (
+	defaultEnvFile = ".env"
+	defaultTimeout = 10 * time.Second
+	temperature    = 0.0
+	maxTokens      = 0
+)
 
 type BotConfig struct {
 	// Telegram bot token
@@ -56,15 +62,32 @@ func Execute() {
 	bot.Use(responseTimer)
 	bot.Use(messageLogger)
 
-	chatGPTService := NewChatGPTService(config.OpenAIAPIKey)
+	chatStore := store.New("chats")
+	gpt4oService := ChatGPTService{
+		client:      openai.NewClient(config.OpenAIAPIKey),
+		chats:       chatStore,
+		Model:       "gpt-4o-mini",
+		Temperature: temperature,
+		MaxTokens:   maxTokens,
+	}
 
-	bot.Handle("/gpt", chatGPTService.HandleNewChat)
-	bot.Handle(tele.OnText, chatGPTService.HandleTextReply)
+	bot.Handle("/gpt", gpt4oService.HandleNewChat)
+	bot.Handle(tele.OnText, gpt4oService.HandleTextReply)
 	bot.Handle("/help", HandleHelpCommand)
-	bot.Handle("/tc", chatGPTService.HandleTCCommand)
-	bot.Handle("/en", chatGPTService.HandleENCommand)
-	bot.Handle("/jp", chatGPTService.HandleJPCommand)
-	bot.Handle("/polish", chatGPTService.HandlePolishCommand)
+	bot.Handle("/tc", gpt4oService.HandleTCCommand)
+	bot.Handle("/en", gpt4oService.HandleENCommand)
+	bot.Handle("/jp", gpt4oService.HandleJPCommand)
+	bot.Handle("/polish", gpt4oService.HandlePolishCommand)
+
+	// o1 preview model
+	o1Service := ChatGPTService{
+		client:      openai.NewClient(config.OpenAIAPIKey),
+		chats:       chatStore,
+		Model:       "o1-preview",
+		Temperature: temperature,
+		MaxTokens:   maxTokens,
+	}
+	bot.Handle("/o1", o1Service.HandleNewChat)
 
 	if config.EnableImageCommand {
 		log.Infof("enabling /image command")

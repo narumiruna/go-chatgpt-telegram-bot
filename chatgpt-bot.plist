@@ -17,8 +17,8 @@
     <key>WorkingDirectory</key>
     <string>/Users/narumi/services/chatgpt-bot</string>
     <key>StandardOutPath</key>
-    <string>/Users/narumi/services/chatgpt-bot/stdout.log</string>
+    <string>/Users/narumi/services/chatgpt-bot/bot.log</string>
     <key>StandardErrorPath</key>
-    <string>/Users/narumi/services/chatgpt-bot/stderr.log</string>
+    <string>/Users/narumi/services/chatgpt-bot/bot.log</string>
   </dict>
 </plist>
