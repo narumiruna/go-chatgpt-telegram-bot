@@ -35,7 +35,7 @@ jobs:
           GOARCH: ${{ matrix.arch }}
         run: go build -o chatgpt-bot ./cmd/main.go
 
-      - uses: actions/upload-artifact@v3
+      - uses: actions/upload-artifact@v4
         with:
           name: chatgpt-bot
           path: chatgpt-bot
