@@ -10,7 +10,7 @@ require (
 	github.com/sashabaranov/go-openai v1.24.1
 	github.com/sirupsen/logrus v1.9.3
 	github.com/stretchr/testify v1.8.1
-	gopkg.in/telebot.v3 v3.2.1
+	gopkg.in/telebot.v3 v3.3.8
 )
 
 require (
