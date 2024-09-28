@@ -145,7 +145,7 @@ func (g *ChatGPTService) handleTranslateCommand(c tele.Context, target string) e
 	message := c.Message()
 
 	chat := types.NewChat()
-	systemContent := fmt.Sprintf("You are a translation assistant. You will translate all messages to %s.", target)
+	systemContent := fmt.Sprintf("You are a translation assistant and teacher. You will translate all messages to %s.", target)
 
 	chat.AddSystemMessage(systemContent)
 
@@ -172,7 +172,7 @@ func (g *ChatGPTService) HandleENCommand(c tele.Context) error {
 }
 
 func (g *ChatGPTService) HandleJPCommand(c tele.Context) error {
-	return g.handleTranslateCommand(c, "Japanese, and provides detailed explanations of the relevant grammar and usage in Traditional Chinese.")
+	return g.handleTranslateCommand(c, "Japanese, and and provide comprehensive explanations of the relevant grammar points and usage in Traditional Chinese. Be sure to include clear examples and sample sentences to enhance understanding.")
 }
 
 func (g *ChatGPTService) HandlePolishCommand(c tele.Context) error {
