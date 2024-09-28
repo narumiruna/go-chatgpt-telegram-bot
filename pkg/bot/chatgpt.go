@@ -172,7 +172,7 @@ func (g *ChatGPTService) HandleENCommand(c tele.Context) error {
 }
 
 func (g *ChatGPTService) HandleJPCommand(c tele.Context) error {
-	return g.handleTranslateCommand(c, "Japanese")
+	return g.handleTranslateCommand(c, "Japanese, and provides detailed explanations of the relevant grammar and usage.")
 }
 
 func (g *ChatGPTService) HandlePolishCommand(c tele.Context) error {
