@@ -71,13 +71,10 @@ func Execute() {
 		MaxTokens:   maxTokens,
 	}
 
-	bot.Handle("/gpt", gptService.HandleNewChat)
+	bot.Handle("/gpt", gptService.CreateHandleFunc("你主要使用台灣用語的繁體中文，並會避免使用簡體中文和中國用語。", "/gpt"))
 	bot.Handle(tele.OnText, gptService.HandleTextReply)
 	bot.Handle("/help", HandleHelpCommand)
-	// bot.Handle("/tc", gptService.HandleTCCommand)
-	// bot.Handle("/en", gptService.HandleENCommand)
-	// bot.Handle("/jp", gptService.HandleJPCommand)
-	// bot.Handle("/polish", gptService.HandlePolishCommand)
+	bot.Handle("/polish", gptService.CreateHandleFunc("Polish the following text:", "/polish "))
 
 	if config.EnableImageCommand {
 		log.Infof("enabling /image command")

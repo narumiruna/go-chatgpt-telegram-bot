@@ -14,8 +14,6 @@ import (
 	tele "gopkg.in/telebot.v3"
 )
 
-const systemMessage = `你主要使用台灣用語的繁體中文，並會避免使用簡體中文和中國用語。`
-
 type ChatGPTService struct {
 	Client    *openai.Client
 	ChatStore store.Store
@@ -88,24 +86,27 @@ func (s *ChatGPTService) reply(c tele.Context, chat *types.Chat) error {
 	return s.ChatStore.Save(key, chat)
 }
 
-func (g *ChatGPTService) HandleNewChat(c tele.Context) error {
-	message := c.Message()
+func (g *ChatGPTService) CreateHandleFunc(systemMessage string, endPoint string) tele.HandlerFunc {
+	return func(c tele.Context) error {
+		message := c.Message()
 
-	userContent := strings.TrimPrefix(message.Text, "/gpt ")
-	if userContent == "" {
-		log.Infof("ignore empty content")
-		return nil
+		userMessage := strings.TrimPrefix(message.Text, endPoint)
+		userMessage = strings.Trim(userMessage, " ")
+		if userMessage == "" {
+			log.Infof("ignore empty content")
+			return nil
+		}
+
+		chat := types.NewChat()
+		chat.AddSystemMessage(systemMessage)
+
+		if message.IsReply() {
+			chat.AddUserMessage(message.ReplyTo.Text)
+		}
+
+		chat.AddUserMessage(userMessage)
+		return g.reply(c, chat)
 	}
-
-	chat := types.NewChat()
-	chat.AddSystemMessage(systemMessage)
-
-	if message.IsReply() {
-		chat.AddUserMessage(message.ReplyTo.Text)
-	}
-
-	chat.AddUserMessage(userContent)
-	return g.reply(c, chat)
 }
 
 func (g *ChatGPTService) HandleTextReply(c tele.Context) error {
@@ -138,59 +139,5 @@ func (g *ChatGPTService) HandleTextReply(c tele.Context) error {
 
 	chat.AddUserMessage(message.Text)
 
-	return g.reply(c, chat)
-}
-
-func (g *ChatGPTService) handleTranslateCommand(c tele.Context, target string) error {
-	message := c.Message()
-
-	chat := types.NewChat()
-	systemContent := fmt.Sprintf("You are a translation assistant. You will translate all messages to %s.", target)
-
-	chat.AddSystemMessage(systemContent)
-
-	if message.IsReply() {
-		chat.AddUserMessage(message.ReplyTo.Text)
-	}
-
-	userContent := strings.TrimPrefix(message.Text, "/tc ")
-	if userContent == "" {
-		log.Infof("ignore empty content")
-		return nil
-	}
-	chat.AddUserMessage(userContent)
-
-	return g.reply(c, chat)
-}
-
-func (g *ChatGPTService) HandleTCCommand(c tele.Context) error {
-	return g.handleTranslateCommand(c, "Taiwanese, 你必須要使用繁體中文和台灣用語, 並把所有中國用語翻譯成台灣用語")
-}
-
-func (g *ChatGPTService) HandleENCommand(c tele.Context) error {
-	return g.handleTranslateCommand(c, "English")
-}
-
-func (g *ChatGPTService) HandleJPCommand(c tele.Context) error {
-	return g.handleTranslateCommand(c, "Japanese")
-}
-
-func (g *ChatGPTService) HandlePolishCommand(c tele.Context) error {
-	message := c.Message()
-
-	userContent := strings.TrimPrefix(message.Text, "/polish ")
-	if userContent == "" {
-		log.Infof("ignore empty content")
-		return nil
-	}
-
-	chat := types.NewChat()
-	chat.AddUserMessage("Please polish the following text:")
-
-	if message.IsReply() {
-		chat.AddUserMessage(message.ReplyTo.Text)
-	}
-
-	chat.AddUserMessage(userContent)
 	return g.reply(c, chat)
 }
