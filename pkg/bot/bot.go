@@ -19,7 +19,7 @@ const (
 	maxTokens      = 0
 )
 
-type BotConfig struct {
+type Config struct {
 	// Telegram bot token
 	TelegramBotToken string `env:"TELEGRAM_BOT_TOKEN" required:"true"`
 
@@ -39,7 +39,7 @@ func Execute() {
 		log.Warnf("failed to load .env file: %+v", err)
 	}
 
-	var config BotConfig
+	var config Config
 	if err := env.Set(&config); err != nil {
 		log.Fatal(err)
 	}
@@ -63,7 +63,7 @@ func Execute() {
 	bot.Use(messageLogger)
 
 	chatStore := store.New("chats")
-	gpt4oService := ChatGPTService{
+	gptService := ChatGPTService{
 		Client:      openai.NewClient(config.OpenAIAPIKey),
 		ChatStore:   chatStore,
 		Model:       "gpt-4o-mini",
@@ -71,13 +71,13 @@ func Execute() {
 		MaxTokens:   maxTokens,
 	}
 
-	bot.Handle("/gpt", gpt4oService.HandleNewChat)
-	bot.Handle(tele.OnText, gpt4oService.HandleTextReply)
+	bot.Handle("/gpt", gptService.HandleNewChat)
+	bot.Handle(tele.OnText, gptService.HandleTextReply)
 	bot.Handle("/help", HandleHelpCommand)
-	// bot.Handle("/tc", gpt4oService.HandleTCCommand)
-	// bot.Handle("/en", gpt4oService.HandleENCommand)
-	// bot.Handle("/jp", gpt4oService.HandleJPCommand)
-	// bot.Handle("/polish", gpt4oService.HandlePolishCommand)
+	// bot.Handle("/tc", gptService.HandleTCCommand)
+	// bot.Handle("/en", gptService.HandleENCommand)
+	// bot.Handle("/jp", gptService.HandleJPCommand)
+	// bot.Handle("/polish", gptService.HandlePolishCommand)
 
 	if config.EnableImageCommand {
 		log.Infof("enabling /image command")
