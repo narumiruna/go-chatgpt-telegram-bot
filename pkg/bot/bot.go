@@ -5,8 +5,6 @@ import (
 
 	"github.com/codingconcepts/env"
 	"github.com/joho/godotenv"
-	"github.com/narumiruna/go-chatgpt-telegram-bot/pkg/store"
-	openai "github.com/sashabaranov/go-openai"
 
 	log "github.com/sirupsen/logrus"
 	tele "gopkg.in/telebot.v3"
@@ -63,14 +61,7 @@ func Execute() {
 	bot.Use(responseTimer)
 	bot.Use(messageLogger)
 
-	chatStore := store.New("chats")
-	gptService := GPTService{
-		Client:      openai.NewClient(config.OpenaiApiKey),
-		ChatStore:   chatStore,
-		Model:       config.OpenaiModel,
-		Temperature: config.OpenaiTemperature,
-		MaxTokens:   config.OpenaiMaxTokens,
-	}
+	gptService := NewGPTService(config)
 
 	bot.Handle("/gpt", gptService.CreateHandleFunc("你主要使用台灣用語的繁體中文，並會避免使用簡體中文和中國用語。", "/gpt"))
 	bot.Handle(tele.OnText, gptService.HandleTextReply)

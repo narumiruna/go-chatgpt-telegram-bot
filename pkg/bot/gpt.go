@@ -23,13 +23,13 @@ type GPTService struct {
 	Temperature float32 `json:"temperature"`
 }
 
-func NewGPTService(key string) *GPTService {
+func NewGPTService(config Config) *GPTService {
 	return &GPTService{
-		Client:      openai.NewClient(key),
+		Client:      openai.NewClient(config.OpenaiApiKey),
 		ChatStore:   store.New("chats"),
-		Model:       "gpt-4o-mini",
-		MaxTokens:   0,
-		Temperature: 0,
+		Model:       config.OpenaiModel,
+		MaxTokens:   config.OpenaiMaxTokens,
+		Temperature: config.OpenaiTemperature,
 	}
 }
 
