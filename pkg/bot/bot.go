@@ -74,7 +74,6 @@ func Execute() {
 	bot.Handle("/gpt", gpt4oService.HandleNewChat)
 	bot.Handle(tele.OnText, gpt4oService.HandleTextReply)
 	bot.Handle("/help", HandleHelpCommand)
-	bot.Handle("/prompt", gpt4oService.handlePromptCommand)
 	// bot.Handle("/tc", gpt4oService.HandleTCCommand)
 	// bot.Handle("/en", gpt4oService.HandleENCommand)
 	// bot.Handle("/jp", gpt4oService.HandleJPCommand)
