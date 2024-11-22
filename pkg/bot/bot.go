@@ -15,16 +15,17 @@ import (
 const (
 	defaultEnvFile = ".env"
 	defaultTimeout = 10 * time.Second
-	temperature    = 0.0
-	maxTokens      = 0
 )
 
 type Config struct {
 	// Telegram bot token
 	TelegramBotToken string `env:"TELEGRAM_BOT_TOKEN" required:"true"`
 
-	// OpenAI API key
-	OpenAIAPIKey string `env:"OPENAI_API_KEY" required:"true"`
+	// OpenAI settings
+	OpenaiApiKey      string  `env:"OPENAI_API_KEY" required:"true"`
+	OpenaiModel       string  `env:"OPENAI_MODEL" default:"gpt-4o-mini"`
+	OpenaiTemperature float32 `env:"OPENAI_TEMPERATURE" default:"0.0"`
+	OpenaiMaxTokens   int     `env:"OPENAI_MAX_TOKENS" default:"0"`
 
 	// whitelist (chat ID)
 	BotWhitelist []int64 `env:"BOT_WHITELIST"`
@@ -63,12 +64,12 @@ func Execute() {
 	bot.Use(messageLogger)
 
 	chatStore := store.New("chats")
-	gptService := ChatGPTService{
-		Client:      openai.NewClient(config.OpenAIAPIKey),
+	gptService := GPTService{
+		Client:      openai.NewClient(config.OpenaiApiKey),
 		ChatStore:   chatStore,
-		Model:       "gpt-4o-mini",
-		Temperature: temperature,
-		MaxTokens:   maxTokens,
+		Model:       config.OpenaiModel,
+		Temperature: config.OpenaiTemperature,
+		MaxTokens:   config.OpenaiMaxTokens,
 	}
 
 	bot.Handle("/gpt", gptService.CreateHandleFunc("你主要使用台灣用語的繁體中文，並會避免使用簡體中文和中國用語。", "/gpt"))
@@ -78,7 +79,7 @@ func Execute() {
 
 	if config.EnableImageCommand {
 		log.Infof("enabling /image command")
-		imageService := NewImageService(config.OpenAIAPIKey)
+		imageService := NewImageService(config.OpenaiApiKey)
 		bot.Handle("/image", imageService.HandleImageCommand)
 	}
 

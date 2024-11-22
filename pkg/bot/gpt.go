@@ -14,7 +14,7 @@ import (
 	tele "gopkg.in/telebot.v3"
 )
 
-type ChatGPTService struct {
+type GPTService struct {
 	Client    *openai.Client
 	ChatStore store.Store
 
@@ -23,8 +23,8 @@ type ChatGPTService struct {
 	Temperature float32 `json:"temperature"`
 }
 
-func NewChatGPTService(key string) *ChatGPTService {
-	return &ChatGPTService{
+func NewGPTService(key string) *GPTService {
+	return &GPTService{
 		Client:      openai.NewClient(key),
 		ChatStore:   store.New("chats"),
 		Model:       "gpt-4o-mini",
@@ -33,7 +33,7 @@ func NewChatGPTService(key string) *ChatGPTService {
 	}
 }
 
-func (g *ChatGPTService) complete(request openai.ChatCompletionRequest) (openai.ChatCompletionMessage, error) {
+func (g *GPTService) complete(request openai.ChatCompletionRequest) (openai.ChatCompletionMessage, error) {
 	var message openai.ChatCompletionMessage
 	ctx := context.Background()
 	err := retry.Do(
@@ -57,7 +57,7 @@ func (g *ChatGPTService) complete(request openai.ChatCompletionRequest) (openai.
 	return message, nil
 }
 
-func (s *ChatGPTService) reply(c tele.Context, chat *types.Chat) error {
+func (s *GPTService) reply(c tele.Context, chat *types.Chat) error {
 	message := c.Message()
 
 	request := openai.ChatCompletionRequest{
@@ -86,7 +86,7 @@ func (s *ChatGPTService) reply(c tele.Context, chat *types.Chat) error {
 	return s.ChatStore.Save(key, chat)
 }
 
-func (g *ChatGPTService) CreateHandleFunc(systemMessage string, endPoint string) tele.HandlerFunc {
+func (g *GPTService) CreateHandleFunc(systemMessage string, endPoint string) tele.HandlerFunc {
 	return func(c tele.Context) error {
 		message := c.Message()
 
@@ -109,7 +109,7 @@ func (g *ChatGPTService) CreateHandleFunc(systemMessage string, endPoint string)
 	}
 }
 
-func (g *ChatGPTService) HandleTextReply(c tele.Context) error {
+func (g *GPTService) HandleTextReply(c tele.Context) error {
 	message := c.Message()
 
 	if message.Text == "" {
