@@ -79,16 +79,6 @@ func Execute() {
 	// bot.Handle("/jp", gpt4oService.HandleJPCommand)
 	// bot.Handle("/polish", gpt4oService.HandlePolishCommand)
 
-	// o1 preview model
-	o1Service := ChatGPTService{
-		Client:      openai.NewClient(config.OpenAIAPIKey),
-		ChatStore:   chatStore,
-		Model:       "o1-preview",
-		Temperature: temperature,
-		MaxTokens:   maxTokens,
-	}
-	bot.Handle("/o1", o1Service.HandleNewChat)
-
 	if config.EnableImageCommand {
 		log.Infof("enabling /image command")
 		imageService := NewImageService(config.OpenAIAPIKey)
