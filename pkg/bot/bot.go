@@ -67,7 +67,7 @@ func Execute() {
 	bot.Handle(tele.OnText, gptService.HandleTextReply)
 	bot.Handle("/help", HandleHelpCommand)
 	// bot.Handle("/polish", gptService.CreateHandleFunc("Polish the following text:", "/polish "))
-	bot.Handle("/fate", gptService.CreateHandleFunc(FatePrompt, "/fate"))
+	// bot.Handle("/fate", gptService.CreateHandleFunc(FatePrompt, "/fate"))
 
 	if config.EnableImageCommand {
 		log.Infof("enabling /image command")
