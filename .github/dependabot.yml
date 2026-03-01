@@ -4,13 +4,9 @@ updates:
     directory: "/"
     schedule:
       interval: "weekly"
-    commit-message:
-      prefix: "dep"
 
   - package-ecosystem: "gomod"
     directory: "/"
     schedule:
       interval: "weekly"
-    commit-message:
-      prefix: "dep"
-    open-pull-requests-limit: 5
+    open-pull-requests-limit: 0
